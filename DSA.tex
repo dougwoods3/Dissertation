@@ -1,0 +1,142 @@
+\documentclass[12pt]{article}
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Diffusion Synthetic Acceleration}
+\label{sec:DSA}
+
+This section describes the methods to be carried out to accomplish the proposed research. We also consider some potential issues that we may encounter with some initial thoughts about mitigation. 
+
+\subsection{Modified Interior Penalty DSA}
+
+\subsubsection{Methodology}
+\subsubsection{Fourier Analysis}
+\subsubsection{Results}
+\subsubsection{As a Preconditioner}
+
+\subsection{MIP DSA with Robin Boundary Conditions}
+
+The diffusion synthetic acceleration (DSA) algorithm first solves the RTE, called a ``transport sweep'', followed by a diffusion solve for each source iteration. The RTE solve is performed exactly as before (Eqs. \ref{eqs:SourceIteration}) with notation changing to indicate a ``half step":
+\begin{subequations}
+\begin{flalign}
+\vec{\Omega} \vd \grad I^{(l+1/2)} + \sigma_t I^{ \left( l + 1/2 \right) } & = \sigma_s E^{ \left( l \right) } + S_0 \\
+E^{\left( l+1/2 \right)} & = \sum_{m=1}^M w_m\ I_m ^{\left(l+1/2 \right)} \left(\vec{r}, \vec{\Omega} \right)
+\end{flalign}
+
+(Recall the energy density $E$ defined by Equation \ref{eq:EnergyDensity}.) Next, we solve the diffusion equation with a modified source term utilizing the half step and previous iteration RTE solutions.
+\begin{flalign}
+- \grad \vd D \grad \phi^{(I+1/2)} + \sigma_a \phi^{\left(l+1/2 \right)} = \sigma_s \left(E^{ \left( l+1/2 \right) } - E^{ \left( l \right) } \right)
+\end{flalign}
+
+The diffusion solution, $\phi^{ \left( l+1/2 \right)}$, becomes the correction factor at the half step. This correction factor is added to the energy density at the half step to complete the full DSA iteration.
+\begin{flalign}
+E^{\left( l+1 \right)} & = E^{\left( l+1/2 \right)} + \phi^{\left( l+1/2 \right)}
+\end{flalign}
+\label{eqs:DSASourceIteration}
+\end{subequations}
+
+\noindent This iterative process continues until the convergence criteria
+\begin{equation}
+\norm{E^{\left(l + 1 \right)} - E^{\left(l \right)}}_\infty < \varepsilon_\text{conv} \left(1 - \rho \right) \norm{E^{l + 1}}_\infty,
+\label{eq:ModifiedConvergenceCriteria}
+\end{equation}
+
+\noindent is met, where $\varepsilon_\text{conv}$ is a small number.
+
+Wang and Ragusa \cite{WangRagusaDSA} proposed the modified interior penalty (MIP) equations for discretizing the DSA equation using the DGFEM:
+\begin{multline}
+b_{MIP} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
++ \left( \kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
+- \frac{1}{2} \left( \phi, D \partial_n w \right)_{\partial \mathbb{V}^d} - \frac{1}{2} \left( D \partial_n \phi, w \right)_{\partial \mathbb{V}^d}
+\label{eq:DSALHS}
+\end{multline}
+
+\noindent and
+\begin{equation}
+l_{MIP} \left( w \right) = \left( Q_0, w \right)_\mathbb{V}
+\label{eq:DSARHS}
+\end{equation}
+
+\noindent where $b_{MIP}$ is the bilinear form, $l_{MIP}$ is the linear form, $w$ is the weight/test function, $\mathbb{V}$ denotes the element volume, $\partial \mathbb{V}^i$ is the internal edges, $\partial \mathbb{V}^d$ is on the problem boundary, $\partial_n$ is the partial derivative perpendicular to the edge (i.e. $\grad \vd \hat{n}$). The following definitions accompany Equations \ref{eq:DSALHS} and \ref{eq:DSARHS}.
+
+\begin{flalign}
+\llbracket \phi \rrbracket & = \phi^+ - \phi ^- \\
+\left\{ \!\! \left\{ \phi \right\} \!\! \right\} & = \frac{\left( \phi^+ + \phi^- \right)}{2}\\
+Q_0 & = \sigma_s \left( E^{\left( l+1/2 \right)} - E^{\left( l \right)} \right) \\
+\kappa_e^{IP} & = \begin{cases} \frac{c \left( p^+ \right)}{2} \frac{D^+}{h^+_{\bot}} + \frac{c \left( p^- \right)}{2} \frac{D^-}{h^-_\bot}, & \text{on interior edges } \left( \text{i.e., }\vec{r} \in E_h^i \right) \\
+c \left( p \right) \frac{D}{h_{\bot}}, & \text{on boundary edges } \left( \text{i.e., }\vec{r} \in \partial D^d \right) \end{cases} \label{eq:kappaIP} \\
+\kappa_e & = \max \left( \kappa_e^{IP}, \frac{1}{4} \right) \label{eq:MIP} \\
+c \left( p \right) & = C p \left( p +1 \right) \label{eq:ConstantC}
+\end{flalign}
+
+\noindent where $C$ is a an arbitrary constant, $D^\pm$ is the diffusion coefficient, $\phi^{\pm}$ is the scalar flux, $p^\pm$ is the order of finite elements, and $h^\pm_{\bot}$ is the perpendicular length of the cell, where the $\pm$ denotes either side of an element boundary. Equation \ref{eq:MIP} is a ``switch'' between two methods (interior penalty and diffusion conforming form), one of which is stable for optically thin regions and the other for optically thick regions. Wang and Ragusa \cite{WangRagusaDSA} used $C = 2$ and Turcksin and Ragusa \cite{TurcksinDiscontinuousDSA} used $C = 4$.
+%Equation \ref{eq:MIP} stops the stabilization parameter from going to zero as the cell becomes optically thick (i.e. as $\epsilon \rightarrow 0$, $D^\pm \rightarrow 0$, thus $\kappa_e^{IP} \rightarrow 0$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Zero Incident Current}
+
+Kanschat \cite{KanschatDGViscousIncompressFlow} shows that Equations \ref{eq:DSALHS} and \ref{eq:DSARHS} employ Nitsche's method for ``a fully conforming method of treating Dirichlet boundary values.'' The boundary terms $\left(\partial \mathbb{V}^d \right)$ in this form are homogeneous Dirichlet boundary conditions. The result is that the DSA correction for the energy density at the problem boundaries is zero, so the energy density is only updated by the RTE solution. That is, the DSA correction only accelerates the interior solution. Consequently, the energy densities on the problem boundary is only subjected to the RTE solution source iterations.
+
+Instead, a DSA update equation should incorporate Robin boundary conditions (zero incident partial current) on the boundaries,
+\begin{flalign}
+\vec{J}_- = 0 & = \frac{1}{4} \phi + \frac{1}{2} D \grad \phi \vd \hat{n}, \\
+- \frac{1}{2} \phi & = D \grad \phi \vd \hat{n},
+\label{eq:RobinBC}
+\end{flalign}
+
+\noindent thereby allowing a correction of the boundary energy densities. This boundary condition requires modification of Equation \ref{eq:DSALHS}. Three implementaion methods are proposed here. Method 1 substitutes Equation \ref{eq:RobinBC} into Equation \ref{eq:DSALHS}:
+\begin{multline}
+b_{MIP,1} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
++ \left(\kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
+- \frac{1}{2} \left(\phi, D \partial_n w \right)_{\partial \mathbb{V}^d}
++ \frac{1}{4} \left(\phi, w \right)_{\partial \mathbb{V}^d}
+\label{eq:Method1}
+\end{multline}
+
+\noindent Method 2 is very similar to Method 1 with one term removed:
+\begin{multline}
+b_{MIP,2} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
++ \left(\kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
++ \frac{1}{4} \left(\phi, w \right)_{\partial \mathbb{V}^d}
+\label{eq:Method2}
+\end{multline}
+
+\noindent Method 3 stems from a different approach. After performing the integration by parts on the diffusion term,
+\begin{flalign}
+- \left(\grad \vd D \grad \phi, w \right)_\mathbb{V} = \left(D \grad \phi, \grad w \right)_\mathbb{V} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^i} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^d},
+\label{eq:IntegrationByParts}
+\end{flalign}
+
+\noindent we employ Equation \ref{eq:RobinBC}:
+\begin{flalign}
+- \left(\grad \vd D \grad \phi, w \right)_\mathbb{V} = \left(D \grad \phi, \grad w \right)_\mathbb{V} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^i} + \frac{1}{2} \left(\phi, w \right)_{\partial \mathbb{V}^d}
+\end{flalign}
+
+\noindent Thus, Method 3 is
+\begin{multline}
+b_{MIP,3} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
++ \frac{1}{2} \left(\phi, w \right)_{\partial \mathbb{V}^d}
+\label{eq:Method3}
+\end{multline}
+
+We will implement these three methods and investigate their impact on the solution behavior. We will first solve a 1-D analytic diffusion equation problem with zero incident current boundary conditions to evaluate our implementation.
+
+\subsubsection{Fourier Analysis}
+\subsubsection{Results}
+\subsubsection{As a Preconditioner}
+
+
+%\bibliographystyle{apalike}
+%\bibliography{Thesis_bib}
+
+\end{document}

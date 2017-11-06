@@ -1,0 +1,23 @@
+\documentclass[12pt]{article}
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+\label{sec:Conclusions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{FutureWork}
+\label{subsec:FutureWork}
+
+Future work beyond the scope of these research objectives could include methods for solving the system of equations. Currently we simultaneously solve for every degree of freedom in the problem. This limits the overall number of unknowns that we can accommodate because they all get stored in memory. However, if we solved individual mesh cells and systematically ``swept through the mesh'' (solve the sparse system of equations for each quadrature direction, in parallel or sequentially), we eliminate this limitation. This allows for cycles (discussed in Section \ref{sec:PotentialIssues}) in the mesh, which require careful handling.
+
+Negative energy densities, observed in some of the test problems above, may contribute to negative mass densities in the equations of state of multiphysics problems. This must be addressed. Mentioned previously are lumping the matrices that constitute the bilinear form or perform a negative energy density fix up. The latter results in a nonlinear system of equations, which may be satisfactory given the TRT equations are already nonlinear. Oscillations could be reduced by using lower order elements in susceptible regions. Investigating an adaptive element could prove beneficial.
+
+Coupling the TRT equations with the hydrodynamics equations is a logical progression toward modeling a realistic problem. Understanding the coupling between equations may be challenging given the variety of physical phenomena in these problems. The increase in the number of degrees of freedom upon this coupling begs for an increase in efficiency. An investigation into increased parallelization is warranted along with solution methods such as sweeping through the mesh.
+
+%\bibliographystyle{apalike}
+%\bibliography{Thesis_bib}
+
+\end{document}

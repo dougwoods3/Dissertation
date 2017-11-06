@@ -1,0 +1,88 @@
+\documentclass{article}
+
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation in MFEM}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{MIP DSA}
+
+There are some specific function calls to MFEM for the diffusion equation that are listed in Table \ref{tab:diffusionIntegrators}. Items 3 and 4 have a $\sigma_D$ value that controls the DG method to be used, where $\sigma_D = -1$ is for the symmetric interior penalty method. Item 6 is for the Robin boundary condition described by Equation \ref{eq:RobinBC}. Item 4 is the function that will need to be modified to adapt Methods 1 and 2 (this function is not used for Method 3).
+
+\floatsetup[table]{capposition=bottom}
+\begin{sidewaystable}[!h]
+\centering
+\caption{MFEM diffusion equation function calls.}
+\begin{threeparttable}
+{\renewcommand{\arraystretch}{2}
+\begin{tabular}{|c|c|c|c|}
+\hline
+no. & FEM Equations \ref{eq:DSALHS} \& \ref{eq:DSARHS} & MFEM Equation & User Input \\\hline
+1 & $\left(\sigma_a \phi, w \right)_\mathbb{V}$ & $\left(\sigma_a \phi, w \right)_\mathbb{V}$ & MassIntegrator$\left(\sigma_a \right)$ \\\hline
+2 & $\left(D \grad \phi, \grad w \right)_\mathbb{V}$ & $\left(D \grad \phi, \grad w \right)_\mathbb{V}$ & DiffusionIntegrator$\left(D \right)$ \\\hline
+3 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \\ $+ \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n w \right\}\!\!\right\} \right)_{\partial \mathbb{V}^i}$ \\ $+ \left(\kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad w \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathbb{V}^i}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
+4 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \\ $- \frac{1}{2} \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n w \right\}\!\!\right\} \right)_{\partial \mathbb{V}^d}$ \\ $- \frac{1}{2} \left(\kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad w \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathbb{V}^d}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
+5 & $ \left(Q_0, w \right)_\mathbb{V}$  & $ \left(Q_0, w \right)_\mathbb{V}$ & DomainLFIntegrator$ \left(Q_0 \right)$ \\\hline
+6 & $\left(\frac{1}{2} \phi, w \right)_{\partial \mathbb{V}^d}$ & $\left(\frac{1}{2} \phi, w \right)_{\partial \mathbb{V}^d}$ & BoundaryMassIntegrator$\left(\frac{1}{2} \right)$ \\\hline
+\end{tabular}}
+\begin{tablenotes}
+\item[$\dagger$]{$\partial \mathbb{V}^i$ denotes an internal edge}
+\item[$\ddagger$]{$\partial \mathbb{V}^d$ denotes a boundary edge}
+\end{tablenotes}
+\end{threeparttable}
+\label{tab:diffusionIntegrators}
+\end{sidewaystable}
+\floatsetup[table]{capposition=top}
+
+\FloatBarrier
+
+\begin{figure}[!h]
+\begin{tikzpicture}[node distance=2cm]
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text width=3cm, text centered, draw=black, fill=red!30];
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text width=2cm, text centered, draw=black, fill=blue!30];
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30];
+\tikzstyle{decision} = [rectangle, minimum width=3cm, minimum height=1cm, text width=3cm, text centered, draw=black, fill=green!30];
+\tikzstyle{arrow} = [thick,->,>=stealth];
+
+\node (start) [startstop] {Start};
+\node (physParam) [io, below of=start] {Physical parameters};
+\node (loadMesh) [io, right of=physParam, xshift=2cm] {Mesh file};
+\node (transMesh) [process, below of=loadMesh] {Transform mesh};
+\node (transSolve) [process, below of=physParam] {Transport solve};
+\node (useDSA) [decision, below of=transSolve] {Use DSA?};
+\node (DSASolve) [process, right of=useDSA, xshift=2cm] {DSA solve};
+\node (dec1) [decision, below of=useDSA] {Convergence criteria met?};
+\node (pro2a) [process, below of=dec1] {Calculate error};
+\node (pro2b) [process, right of=dec1, xshift=2cm] {Continue source iteration};
+\node (out1) [io, below of=pro2a] {Simulation results};
+\node (stop) [startstop, below of=out1] {Stop};
+
+\draw [arrow] (start) -- (physParam);
+\draw [arrow] (physParam) -- (transSolve);
+\draw [arrow] (loadMesh) -- (transMesh);
+\draw [arrow] (transMesh) -- (transSolve);
+\draw [arrow] (transSolve) -- (useDSA);
+\draw [arrow] (useDSA) -- node[anchor=east] {no} (dec1);
+\draw [arrow] (useDSA) -- node[anchor=south] {yes} (DSASolve);
+\draw [arrow] (DSASolve) -- (dec1);
+\draw [arrow] (dec1) -- node[anchor=east] {yes} (pro2a);
+\draw [arrow] (dec1) -- node[anchor=south] {no} (pro2b);
+
+\draw [arrow] (pro2b) -- (transSolve);
+\draw [arrow] (pro2a) -- (out1);
+\draw [arrow] (out1) -- (stop);
+
+\end{tikzpicture}
+\caption{Flow diagram for solution process.}
+\label{fig:BroomFlowDiagram}
+\end{figure}
+
+\FloatBarrier
+
+
+
+\end{document}

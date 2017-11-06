@@ -1,0 +1,209 @@
+\documentclass[12pt]{article}
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\RZ\ Geometry}
+\label{sec:RZ}
+
+This section describes the methods to be carried out to accomplish the proposed research. We also consider some potential issues that we may encounter with some initial thoughts about mitigation. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{DFEM}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The RTE in \RZ\ geometry is \cite{Lewis_Comp_Methods_Neu_Trans}
+\begin{multline}
+\frac{\mu}{r} \frac{\partial}{\partial r} r I \left(r,z, \vec{\Omega} \right) - \frac{1}{r} \frac{\partial}{\partial \omega} \eta I \left(r,z, \vec{\Omega} \right) + \xi \frac{\partial}{\partial z} I \left(r,z,\vec{\Omega} \right) + \sigma_t \left(r,z \right) I \left(r,z,\vec{\Omega} \right) \\
+= \frac{1}{4 \pi} \int_{4 \pi} \sigma_s \left(r,z \right) I \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime + S_0 \left(r,z, \vec{\Omega} \right)
+\label{eq:RZTransport}
+\end{multline}
+
+\noindent where $I$ is the intensity, $\sigma_t$ is the total opacity, $\sigma_s$ is the scattering opacity, $S_0$ is an arbitrary source, and $\omega$ is defined in the cylindrical coordinate system shown in Figure \ref{fig:CylindricalCoordinateSystem}. The direction of travel is defined by
+\begin{flalign}
+\mu & \equiv \vec{\Omega} \vd \hat{e}_r = \sqrt{1 - \xi^2} \cos \omega = \sin(\theta) \cos(\omega), \\
+\eta & \equiv \vec{\Omega} \vd \hat{e}_\theta = \sqrt{1 - \xi^2} \sin \omega = \sin(\theta) \sin(\omega), \\
+\xi & \equiv \vec{\Omega} \vd \hat{e}_z = \cos(\theta).
+\end{flalign}
+
+\begin{figure}[!h]
+\tdplotsetmaincoords{60}{110}
+\begin{tikzpicture}[scale=10,tdplot_main_coords]
+\pgfmathsetmacro{\rvec}{.8}
+\pgfmathsetmacro{\phivec}{40}
+\pgfmathsetmacro{\thetavec}{50}
+\pgfmathsetmacro{\omegavec}{60}
+
+\coordinate (O) at (0,0,0);
+\draw[thick,->] (0,0,0) -- (1,0,0) node[anchor=north east]{$x$};
+\draw[thick,->] (0,0,0) -- (0,1,0) node[anchor=north west]{$y$};
+\draw[thick,->] (0,0,0) -- (0,0,1) node[anchor=south]{$z$};
+\tdplotsetcoord{P}{\rvec}{\phivec}{\thetavec}
+\draw[-stealth,color=red] (O) -- (P) node[above left] {$(r,z)$};
+\draw[dashed, color=red] (O) -- (Pxy);
+\draw[dashed, color=red] (P) -- (Pxy);
+
+\coordinate (er) at ($(P)+0.4*({cos(\thetavec)},{sin(\thetavec)},0)$);
+\coordinate (etheta) at ($(P)+0.4*({-cos(90-\thetavec)},{sin(90-\thetavec)},0)$);
+\coordinate (ez) at ($(P)+0.4*(0,0,1)$);
+\draw[-stealth] (P) -- (er) node[below right] {$\hat{e}_r$};
+\draw[-stealth] (P) -- (etheta) node[below right] {$\hat{e}_\theta$};
+\draw[-stealth] (P) -- (ez) node[right] {$\hat{e}_z$};
+
+\coordinate (Omega) at ($(P)+0.2*(-.5,1.5,2)$);
+\draw[-stealth,color=blue] (P) -- (Omega) node[above right] {$\vec{\Omega}$};
+\draw[dashed,color=blue] (Omega) -- ($(Omega)+0.2*(0,0,-2)$) -- (P);
+\tdplotdrawarc[color=blue]{(P)}{0.2}{\thetavec}{\thetavec+\omegavec}{anchor=north}{$\omega$}
+
+\tdplotsetthetaplanecoords{\phivec}
+\tdplotsetrotatedcoords{\thetavec}{270}{0}
+\tdplotsetrotatedcoordsorigin{(P)}
+\tdplotdrawarc[tdplot_rotated_coords,color=blue]{(0,0,0)}{0.2}{0}{\thetavec}{anchor=south west}{$\theta$}
+
+\end{tikzpicture}
+\caption{Cylindrical coordinate system.}
+\label{fig:CylindricalCoordinateSystem}
+\end{figure}
+
+\noindent Discretizing Equation \ref{eq:RZTransport} with a level-symmetric angular quadrature results in 
+\begin{multline}
+\frac{\mu_{m,n}}{r} \frac{\partial}{\partial r} r I_{m,n} \left(r,z \right) - \frac{1}{r} \frac{\partial}{\partial \omega} \eta_{m,n} I_{m,n} \left(r,z \right) + \xi_n \frac{\partial}{\partial z} I_{m,n} \left(r,z \right) + \sigma_t \left(r,z \right) I_{m,n} \left(r,z \right) \\
+= \frac{1}{4 \pi} \int_{4 \pi} \sigma_s \left(r,z \right) I \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime + S_0 \left(r,z, \vec{\Omega} \right)
+\label{eq:RZSNTransport}
+\end{multline}
+
+\noindent for direction $\vec{\Omega}_{m,n}$, where index $n$ describes a level of quadrature with constant $\xi$ and the $m$ index denotes the quadrature point on that level. Lewis and Miller \cite{Lewis_Comp_Methods_Neu_Trans} describes an approximation for the partial derivative of the intensity with respect to $\omega$:
+\begin{flalign}
+- \frac{1}{r} \frac{\partial}{\partial \omega} \eta_{m,n} I_{m,n} \left(r,z \right) & = \frac{\alpha_{m+1/2}^n I_{m+1/2,} (r,z) - \alpha_{m-1/2}^n I_{m-1/2,n} (r,z)}{r w_{m,n}}
+\end{flalign}
+
+\noindent where $\alpha_{m+1/2}^n$ and $\alpha_{m-1/2}^n$ are angular differencing coefficients, and $w_{m,n}$ is the angular quadrature weight. We substitute this into Equation \ref{eq:RZSNTransport},
+\begin{multline}
+\frac{\mu_{m,n}}{r} \frac{\partial}{\partial r} r I_{m,n} \left(r,z \right) + \frac{\alpha_{m+1/2}^n I_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n I_{m-1/2,n} (r,z)}{r w_{m,n}} \\
++ \xi_n \frac{\partial}{\partial z} I_{m,n} \left(r,z \right) + \sigma_t \left(r,z \right) I_{m,n} \left(r,z \right) \\
+= \frac{1}{4 \pi} \int_{4 \pi} \sigma_s \left(r,z \right) I \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime + \frac{1}{4 \pi} S_0 \left(r,z \right)
+\label{eq:RZSNADTransport}
+\end{multline}
+
+\noindent Here, we pause to notice that there are similarities and differences between our Cartesian discretization. The absorption term, axial derivative term, and right-hand-side are the same in both coordinate systems. The differences arise in the radial and angular derivative terms. After multiplying through by the radius $r$, the radial derivative term has a factor of $r$ inside the derivative. The angular derivative term is also new and does not resemble a mass matrix so MFEM will require additional modification.
+
+Requiring Equation \ref{eq:RZSNADTransport} to satisfy the uniform infinite medium solution results in the condition,
+\begin{flalign}
+\alpha_{m+1/2}^n & = \alpha_{m-1/2}^n - \mu_{m,n} w_{m,n}
+\label{eq:AlphaMinusMuW}
+\end{flalign}
+
+\iffalse
+\begin{multline}
+\int_{4 \pi} d \Omega \left[ \frac{\mu_{m,n}}{r} \frac{\partial}{\partial r} r \psi_{m,n} \left(r,z \right) + \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}} \right. \\
+\left. + \xi_n \frac{\partial}{\partial z} \psi_{m,n} \left(r,z \right) \right] + \sigma_t \left(r,z \right) \phi \left(r,z \right) \\
+= \sigma_s \left(r,z \right) \phi \left(r,z\right) + S_0 \left(r,z \right)
+\end{multline}
+\begin{multline}
+\int_{4 \pi} d \Omega \left[ \frac{\mu_{m,n}}{r} \frac{\partial}{\partial r} r \psi_{m,n} \left(r,z \right) + \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}} \right. \\
+\left. + \xi_n \frac{\partial}{\partial z} \psi_{m,n} \left(r,z \right) \right] = 0
+\end{multline}
+
+\noindent That is, the streaming term must equal zero because $\sigma_t = \sigma_a + \sigma_s$. Using the product rule,
+\begin{multline}
+\int_{4 \pi} d \Omega \left[\frac{\mu_{m,n}}{r} \left(\frac{\partial r}{\partial r} \psi_{m,n} + r \frac{\partial \psi_{m,n} (r,z)}{\partial r} \right) + \right. \\
+\left. \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}} + \xi_n \frac{\partial}{\partial z} \psi_{m,n} \left(r,z \right) \right] = 0
+\end{multline}
+\begin{flalign}
+\int_{4 \pi} d \Omega \left[\frac{\mu_{m,n}}{r} \psi_{m,n} + \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}} \right] & = 0 \\
+\left(\frac{\mu_{m,n}}{r} + \frac{\alpha_{m+1/2}^n - \alpha_{m-1/2}^n}{r w_{m,n}} \right) \phi(r,z) & = 0
+\end{flalign}
+
+\noindent results in the condition,
+\begin{flalign}
+\alpha_{m+1/2}^n & = \alpha_{m-1/2}^n - \mu_{m,n} w_{m,n}
+\label{eq:AlphaMinusMuW}
+\end{flalign}
+\fi
+
+\noindent If $\alpha_{1/2}^n$ is known, then the remaining coefficients are uniquely determined. To find $\alpha_{1/2}^n$, we require that Equation \ref{eq:RZSNADTransport} satisfy the conservation equation (Eq. \ref{eq:RZTransport}).
+%
+\iffalse
+Discretizing Equation \ref{eq:RZTransport} using discrete ordinates and summing over all directions (approximately integrating over all directions),
+\begin{multline}
+\sum_{n=1}^N \sum_{m=1}^{M_n} \frac{1}{r} \frac{\partial}{\partial r} r w_{m,n} \mu_{m,n} \psi_{m,n} \left(r,z \right) - \sum_{n=1}^N \sum_{m=1}^{M_n} \frac{1}{r} \frac{\partial}{\partial \omega} w_{m,n} \eta_{m,n} \psi_{m,n} \left(r,z \right) \\
++ \sum_{n=1}^N \sum_{m=1}^{M_n} \xi_n \frac{\partial}{\partial z} w_{m,n} \psi_{m,n} \left(r,z \right) + \sum_{n=1}^N \sum_{m=1}^{M_n} \sigma_t \left(r,z \right) \psi_{m,n} \left(r,z \right) \\
+= \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{1}{4 \pi} \int_{4 \pi} \sigma_s \left(r,z \right) \psi \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime + \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{1}{4 \pi} S_0 \left(r,z \right)
+\end{multline}
+
+\noindent Given that the sum of the weights is $\sum w = 4 \pi$,
+\begin{multline}
+\sum_{n=1}^N \sum_{m=1}^{M_n} \frac{1}{r} \frac{\partial}{\partial r} r w_{m,n} \mu_{m,n} \psi_{m,n} \left(r,z \right) - \sum_{n=1}^N \sum_{m=1}^{M_n} \frac{1}{r} \frac{\partial}{\partial \omega} w_{m,n} \eta_{m,n} \psi_{m,n} \left(r,z \right) \\
++ \sum_{n=1}^N \sum_{m=1}^{M_n} \xi_n \frac{\partial}{\partial z} w_{m,n} \psi_{m,n} \left(r,z \right) \\
+= - \sum_{n=1}^N \sum_{m=1}^{M_n} \sigma_t \left(r,z \right) \psi_{m,n} \left(r,z \right) + \int_{4 \pi} \sigma_s \left(r,z \right) \psi \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime +  S_0 \left(r,z \right)
+\end{multline}
+
+\noindent Multiplying Equation \ref{eq:RZSNADTransport} by weight $w_{m,n}$ and summing over all directions results in
+\begin{multline}
+\sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{\mu_{m,n}}{r} \frac{\partial}{\partial r} r \psi_{m,n} \left(r,z \right) + \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}} \\
++ \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \xi_n \frac{\partial}{\partial z} \psi_{m,n} \left(r,z \right) + \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \sigma_t \left(r,z \right) \psi_{m,n} \left(r,z \right) \\
+= \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{1}{4 \pi} \int_{4 \pi} \sigma_s \left(r,z \right) \psi \left(r,z, \vec{\Omega}^\prime \right) d \Omega^\prime + \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{1}{4 \pi} S_0 \left(r,z \right)
+\end{multline}
+
+\noindent Then, to satisfy the condition,
+\begin{multline}
+- \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{1}{r} \frac{\partial}{\partial \omega} \eta_{m,n} \psi_{m,n} \left(r,z \right) \\
+= \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \frac{\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z)}{r w_{m,n}}
+\end{multline}
+\begin{multline}
+- \sum_{n=1}^N \sum_{m=1}^{M_n} w_{m,n} \left(\frac{\partial \eta_{m,n}}{\partial \omega} \psi_{m,n} \left(r,z \right) + \eta_{m,n} \frac{\partial \psi_{m,n} \left(r,z \right)}{\partial \omega} \right) \\
+= \sum_{n=1}^N \sum_{m=1}^{M_n} \left(\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z) \right)
+\end{multline}
+
+\noindent If $\int_{2 \pi} d \omega \frac{\partial}{\partial \omega} \eta \psi = 0$, then
+\begin{flalign}
+\sum_{m=1}^{M_n} \left(\alpha_{m+1/2}^n \psi_{m+1/2,n} (r,z) - \alpha_{m-1/2}^n \psi_{m-1/2,n} (r,z) \right) & = 0 \\
+\alpha_{1/2}^n \psi_{1/2,n} (r,z) - \alpha_{M_n + 1/2}^n \psi_{M_n + 1/2,n} (r,z) & = 0
+\end{flalign}
+\fi
+%
+Given a quadrature set with an even number of $\mu_{m,n}$ values, setting $\alpha_{1/2}^n = 0$ results in $\alpha_{M_n + 1/2}^n = 0$ per Equation \ref{eq:AlphaMinusMuW} and the conservation equation is satisfied.
+
+\iffalse
+ for any value of $\psi_{1/2,n} (r,z)$ and $\psi_{M_n + 1/2,n} (r,z)$.
+\fi
+
+A relationship between $I_{m,n}$, $I_{m+1/2,n}$, and $I_{m-1/2,n}$ must be established. A weighted diamond difference scheme has been established by Morel and Montry \cite{MorelAnalysisEliminationFluxDip},
+\begin{flalign}
+I_{m,n} (r,z) & = \tau_{m,n} I_{m+1/2,n} + \left(1- \tau_{m,n} \right) I_{m-1/2,n}
+\end{flalign}
+
+\noindent where $\tau_{m,n}$ linearly interpolates $\mu$:
+\begin{flalign}
+\tau_{m,n} & = \frac{\mu_{m,n} - \mu_{m-1/2,n}}{\mu_{m+1/2,n} - \mu_{m-1/2,n}}
+\end{flalign}
+
+\noindent with
+\begin{flalign}
+\mu_{m+1/2,n} & = \sqrt{1 - \xi_n^2} \cos \left(\varphi_{m+1/2,n} \right) \\
+\varphi_{m+1/2,n} & = \varphi_{m-1/2,n} + \pi \frac{w_{m,n}}{w_n} \\
+w_n & = \sum_{m=1}^{M_n} w_{m,n}
+\end{flalign}
+
+To incorporate reflecting boundary conditions, we will ``guess'' the incident angular fluxes, update them with outgoing angular fluxes from the previous iteration, and adapt a convergence criterion for those fluxes. Along the z-axis, the reflection for direction $\vec{\Omega} = (\mu, \eta, \xi)$ is $\vec{\Omega}_R = (-\mu, \eta, \xi)$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Lumping}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{DSA}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Symmetry Preservation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Other}
+
+
+
+%\bibliographystyle{apalike}
+%\bibliography{Thesis_bib}
+
+\end{document}

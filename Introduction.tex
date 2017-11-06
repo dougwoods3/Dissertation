@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{OSUDissertation}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+There are several applications for the thermal radiation transport (TRT) equation for nuclear fusion. Two of which include astrophysics such as stars or supernovae \cite{Castor_Rad_Hydro}, and inertial confinment fusion such as the National Ignition Facility\footnote{\url{https://lasers.llnl.gov}} (NIF). Nuclear fusion occurs in the high energy density physics (HEDP) regime where mass and energy densities of a material are very high \cite{DrakeHEDPPaper, Castor_Rad_Hydro}. Since material temperatures are very high, materials emit black body radiation in tremendous quantities. This thermal radiation field deposits energy back to the material influencing the material internal energy, temperature, and density. The radiation field can exchange enough momentum with the material that it directly affects the fluid motion \cite{Castor_Rad_Hydro}. Radiation transport and material absorption and emission are interdependent mechanisms that must be modeled simultaneously to obtain an energy distribution throughout the material. The material may also be exposed to additional hydrodynamic forces that change pressures, introduce density fluctuations, and cause fluid motion. In turn, the motion and energy density of the fluid affects the location and quantity of radiation emission. This complicated system of thermal radiation transport with hydrodynamics is studied in radiation hydrodynamics. While all of the forces in these HEDP systems are important, we can study some of the effects independently. For instance, we study hydrodynamics separately from TRT.
+
+The staggered grid hydrodynamics (SGH) approach is considered a traditional approach that uses the finite difference or finite volume methods, and has to compensate for calculating the spatial gradients, which are highly dependent on the mesh resolution \cite{DobrevHOFEMHydro}. The finite element method (FEM) has been employed, approximating the thermodynamic variables as piecewise constant and the kinematic variables as linear continuous\cite{ScovazziQ1P0Hydro}, and higher order finite elements \cite{DobrevCurvilinearFEMHydro}.
+
+Lawrence Livermore National Laboratory (LLNL) is developing a hydrodynamics code called BLAST.\footnote{https://computation.llnl.gov/project/blast/} \cite{DobrevHOFEMHydro}. It solves the Euler equations using a general finite element method (FEM) on meshes with curved surfaces for the conservation of mass, energy, and momentum of a fluid \cite{DobrevCurvilinearFEMHydro}. Novel features include: higher order elements to represent the thermodynamic and kinematic variables, and meshes with curved surfaces. Compared to SGH, Dobrev et al. \cite{DobrevCurvilinearFEMHydro} demonstrated their method can more accurately model flow geometry, symmetry of radial flow, and an increased resolution of a shock front saying their method has the ability to model the shock within a single mesh element. These improvements have reduced some of the numerical errors that have been exhibited by previous methods.
+
+BLAST utilizes MFEM \cite{MFEM_Web}, a general finite element library also being developed at LLNL, to spatially discretize using the high order FEM on meshes with curved surfaces. This proposed TRT research could be combined with a hydrodynamics code such as BLAST to develop a radiation hydrodynamics package to better model HEDP problems such as those produced during inertial confinement fusion at the NIF. The integrated radiation hydrodynamics code will need each physics package to numerically solve the same physical problem and communicate between packages. Hence, it is advantageous to utilize the same general finite element library when considering the integration of code packages.
+
+This chapter introduces TRT and establishes our motivation for using the proposed methods. In Section \ref{sec:TRTIntro}, we give a brief introduction to the TRT equations and nomenclature. In Section \ref{sec:DiscretizationIntro}, we describe various discretization methods used to solve the TRT equations. In Section \ref{sec:DiffLimitIntro}, we describe the diffusion limit and it's application to optically thick problems found in HEDP regimes. Finally, in Section \ref{sec:OutlineIntro}, we outline the remained of this research proposal.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Thermal Radiation Transport}
+\label{sec:TRTIntro}
+
+High energy density material absorbs and emits radiation. The property of interest is the energy density and/or temperature of the material. We introduce the radiation intensity
+\begin{flalign}
+I \left(\vec{r}, \vec{\Omega}, \nu, t \right) & = h \nu f \left(\vec{r}, \vec{\Omega}, \nu, t \right)
+\end{flalign}
+
+\noindent which describes the energy at position $\vec{r}$, traveling in direction $\vec{\Omega}$, with frequency $\nu \left[\text{s}^{-1} \right]$, at time $t$, where $f \left[\text{cm}^{-2} \cdot \text{s}^{-1} \cdot \text{ster}^{-1} \right]$ is the equivalent to the photon density, $h = 6.26 \times 10^{-34}\ \text{J} \cdot \text{s}$ is the Planck constant, and $\epsilon \left[\text{J} \right] = h \nu$ is the photon energy with frequency $\nu$. The TRT equations can then be written \cite{BrunnerRadTransport}
+\begin{subequations}
+\begin{flalign}
+\frac{1}{c} \frac{\partial I}{\partial t} + \vec{\Omega} \vd \grad I + \sigma_t I & = \frac{\sigma_s}{4 \pi} \int_{4 \pi} I d \Omega^\prime + \sigma_a B + S_0
+\label{eq:RadTransport} \\
+\frac{\partial u_m}{\partial t} & = - \int_0^\infty \int_{4 \pi} c \sigma_a \left(B - I \right) d \Omega^\prime d \nu + Q_m
+\label{eq:MatEnergy}
+\end{flalign}
+\label{eqs:TRT}
+\end{subequations}
+
+\noindent where $c=3.00 \times 10^{8}\ \text{m} \cdot \text{s}^{-1}$ is the speed of light in a vacuum, $\sigma_t \left[\text{cm}^{-1} \right] = \sigma_s + \sigma_a$ is the total opacity, $\sigma_s \left[\text{cm}^{-1} \right]$ is the scattering opacity, $\sigma_a \left[\text{cm}^{-1} \right]$ is the absorption opacity, $B \left[\text{J} \cdot \text{cm}^{-1} \cdot \text{s}^{-1} \right]$ is Planck's function as a function of material temperature and photon frequency, $S_0 \left[\text{J} \cdot \text{cm}^{-2} \cdot \text{s}^{-1} \right]$ is an external source of photon frequency, $u_m \left[\text{J} \right]$ is the energy density of the material, and $Q_m \left[\text{J} \cdot \text{s}^{-1} \right]$ is an external material heat source.
+
+Equations \ref{eqs:TRT} are functions of seven variables: three in space ($\vec{r}$), two in direction of travel ($\vec{\Omega}$), frequency ($\nu$), and time ($t$). Equation \ref{eq:RadTransport} describes the intensity balance of losses and gains. Particularly, $\partial I / \partial t$ describes the change in intensity over time, $\vec{\Omega} \vd \grad I$ is the streaming term, $\sigma_t I$ is the absorption term, $\sigma_s / 4 \pi \int_{4 \pi} I d \Omega^\prime$ is the scattering term, $\sigma_a B$ is the emission term, and $S_0$ is an arbitrary volumetric source. Equation \ref{eq:MatEnergy} describes the material energy balance. Particularly, $\partial u_m / \partial t$ describes the change in energy over time, $\int d \nu \int d \Omega^\prime c \sigma_a B$ is the power loss due to radiation emission, $\int d \nu \int d \Omega^\prime c \sigma_a I$ is the power gain due to radiation absorption, and $Q_m$ is an external material heat source. The desired solution to TRT applications involves both the distribution of the radiation field and the material energy and temperature distributions.
+
+There are only a few specific cases where the TRT equations can be solved exactly. Problems of interest typically fall outside of this subset and numerical methods must be employed to attain a solution. There are two general categories of methods used to solve this equation: Monte Carlo methods and deterministic methods.
+
+Monte Carlo methods take a statistical approach. A single photon is followed from its birth through its ``random walk'' through the problem domain until it is either absorbed or escapes the domain. If enough photons are simulated, a statistically significant conclusion can be drawn about the photon density in a region of interest. This is very accurate but also computationally demanding because of the large number of photons required to be simulated.
+
+Alternatively, deterministic methods approach the problem by discretizing the TRT equations in each of their dependent variables and solving a nonlinear algebraic system of equations. These methods are generally faster than Monte Carlo methods but involve discretization or truncation errors. However, employing certain discretizations can reduce the impact of these errors.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Discretization}
+\label{sec:DiscretizationIntro}
+
+Physically, 3-dimensional space is continuous: a photon could exist at any one of an infinite number of locations. Numerically, it is impossible to compute a solution at an infinite number of locations so we discretize the spatial domain into a small subset of locations. Similarly, a photon can travel in an infinite number of directions so we approximate it traveling in only a few. Discretizing the direction of travel by using the discrete ordinates (\SN) method \cite{discrete_ordinates} is common. Photons may behave or interact with material differently at different frequencies. We approximate an infinite number of photon frequencies by grouping them into a finite number of groups. If a problem evolves through time, we discretize the time continuum with small discrete steps through time.
+
+There are several methods of spatial discretization that appear in the transport community. Among the most common are characteristic methods \cite{AdamsCharacteristicMethods}, finite difference methods \cite{Lewis_Comp_Methods_Neu_Trans}, finite volume methods, and finite element methods (FEMs) \cite{Lewis_Comp_Methods_Neu_Trans}. Typically, the problem domain is divided to a larger number of smaller domains. The equations are then numerically solved on each of these smaller regions where the solution is likely less varying when compared to the entire problem. The FEM has been favored for it's ability to perform in the thick diffusion limit \cite{LarsenAsymptotic} (discussed in Sections \ref{sec:DiffLimitIntro} and \ref{sec:LiteratureReview}).
+Thus, this research uses the FEM in which the solution is approximated to have a functional form within each mesh element. More discussion of various discretization methods can be found in Lewis and Miller \cite{Lewis_Comp_Methods_Neu_Trans}.
+
+Additionally, these TRT problems are solved in each of Cartesian, cylindrical (\RZ), and spherical coordinates. The present research is concerned with Cartesian and \RZ\ geometries. Difficulties arise in \RZ\ geometry because of the introduction of angular derivatives. While a photon travels in a straight line in direction $\vec{\Omega}$, the cosines of the angles relative to the coordinate axes change as the $r$ and $z$ coordinates change.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Diffusion Limit}
+\label{sec:DiffLimitIntro}
+
+HEDP problems are examples of scenarios where a photon has a very small mean free path compared to the size of the spatial mesh. This happens when the total opacity $\sigma_t$ becomes very large. These problems are called ``optically thick''. Often, a simplified version of the TRT equations is considered when determining the performance of a discretization method in the diffusion limit: the uncoupled, steady-state, radiation transport equation (RTE)
+\begin{flalign}
+\vec{\Omega} \vd \grad I + \sigma_t I & = \frac{\sigma_s}{4 \pi} \int_{4 \pi} I d \Omega^\prime + S_0
+\label{eq:RTE}
+\end{flalign}
+
+\noindent This simplified equation must behave well in the optically thick regime if we are to expect the same from the more complex TRT equations. The RTE behaves well when the spatial mesh is optically thin. But we can assess the behavior of Equation \ref{eq:RTE} as the problem becomes increasingly optically thick by performing an asymptotic analysis. Specifically, if a small factor $\varepsilon$ is used to scale the physical processes of Equation \ref{eq:RTE},
+\begin{flalign}
+\vec{\Omega} \vd \grad I + \frac{\sigma_t}{\varepsilon} I & = \frac{1}{4 \pi} \left(\frac{\sigma_t}{\varepsilon} - \varepsilon \sigma_a \right) \int_{4 \pi} I d \Omega^\prime + \varepsilon S_0
+\end{flalign}
+
+\noindent then as $\varepsilon \rightarrow 0$ the mean free path $\Lambda = \varepsilon / \sigma_t \rightarrow 0$. In this limit, the problem is said to be optically thick and diffusive. It can be shown \cite{MalvagiAsymptoticAnalysis} that this scaled analytic RTE limits to the analytic radiation diffusion equation to $O(\varepsilon^2)$. Thus, problems that are typically solved by using the radiation diffusion equation (because they are highly diffusive) can also be solved using the RTE.
+
+The source iteration (SI) method \cite{Lewis_Comp_Methods_Neu_Trans} is commonly employed to solve the discretized RTE. The algorithm
+\begin{subequations}
+\begin{flalign}
+\vec{\Omega} \vd \grad I^{(l+1)} + \sigma_t I^{(l+1)} & = \frac{1}{4 \pi} \sigma_s E^{(l)} + S_0 \\
+E^{(l+1)} & = \sum_m w_m I^{(l+1)}_m
+\end{flalign}
+\label{eqs:SourceIteration}
+\end{subequations}
+
+\noindent describes the calculation of the intensity using the lagged energy density followed by an update to the energy density using the angular quadrature weights $w_m$, where the energy density is
+\begin{flalign}
+E \left(\vec{r}, \nu, t \right) & = \int_{4 \pi} I \left(\vec{r}, \vec{\Omega}, \nu, t \right) d \Omega
+\label{eq:EnergyDensity}
+\end{flalign}
+
+\noindent The RTE can converge arbitrarily slowly in these optically thick regimes \cite{LarsenStableDSATheory}. To speed up the SI, one option is to refine the mesh until the optical thickness of a typical mesh cell is on the order of a mean-free-path to, effectively, solve an optically thin problem in each mesh zone. This option is not very efficient because it can introduce a large number of degrees of freedom to the problem, thereby increasing the solver time. Alternatively, acceleration techniques can be applied to the SI to compensate for slow convergence. Diffusion synthetic acceleration is commonly used to accelerate the source iteration and is discussed in more detail below.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Outline}
+\label{sec:OutlineIntro}
+
+The remainder of this paper is outlined as follows. 
+
+%\bibliographystyle{apalike}
+%\bibliography{Thesis_bib}
+
+
+\end{document}

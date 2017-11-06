@@ -1,0 +1,180 @@
+\documentclass{article}
+
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Previous DSA Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Varying Penalty within MFEM for Homogeneous Problems and/or Non-Uniform Meshes}
+
+The penalty term (Eq. \ref{eq:MIP}) contains information from the problem. However, as currently implemented, the penalty term is a constant multiplier. To ensure Equation \ref{eq:MIP} holds within MFEM, we must create a new integrator class based on \texttt{DGDiffusionIntegrator} to modify the penalty term according to each of the mesh boundaries. Equation \ref{eq:MIP} states that the minimum penalty value is $1/4$, thus,
+\begin{flalign}
+\kappa_\text{MFEM} \left< \left\{\!\!\left\{\frac{D}{h_\perp} \right\}\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right> & \equiv \kappa_e \left< \llbracket \phi \rrbracket, \llbracket w \rrbracket \right> \\
+\kappa_\text{MFEM} \left\{\!\!\left\{\frac{D}{h_\perp} \right\}\!\!\right\} & \equiv \kappa_e \geq \frac{1}{4} \\
+\kappa_\text{MFEM} & \geq \frac{1}{4} \left\{\!\!\left\{\frac{h_\perp}{D} \right\}\!\!\right\}
+\label{eq:kappaMFEM}
+\end{flalign}
+
+\noindent Thus, enforcing $\kappa_e = 1/4$, \texttt{DGDiffusionIntegrator} would become
+\begin{flalign}
+\frac{1}{4} \left\{\!\!\left\{\frac{h_\perp}{D} \right\}\!\!\right\} \left< \left\{\!\!\left\{\frac{D}{h_\perp} \right\}\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right>
+\end{flalign}
+
+\noindent This method would effectively remove any user input to this integrator, determining the penalty coefficient internally. However, it fixes the penalty value $\kappa_e = 1/4$ rather than $\kappa_e = \max \left(\kappa_e^{IP}, 1/4 \right)$. To fully adapt the MIP equations, the maximum $\kappa_e = \max \left(\kappa_e^{IP}, \kappa_\text{MFEM} \right)$ should be used where $\kappa_e^{IP}$ is defined by Equation \ref{eq:kappaIP}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Older DSA Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Diffusion Synthetic Acceleration}
+
+Results using the MIP DSA equations using Dirichlet boundary conditions (Eqs. \ref{eq:DSALHS} and \ref{eq:DSARHS}) are solved and some results are compared to unaccelerated solutions in Table \ref{tab:2DDiffErr}. The ``Adams problem'' is defined in Adams \cite{Adams_Disc_FEM_Thick_Diff}. It is a homogeneous 2-D diffusion limit problem with Dirichlet boundary conditions. For the various values of $\epsilon$ shown, $\sigma_t = \epsilon^{-1}$, $\sigma_a = \epsilon$, $\sigma_s = \sigma_t - \sigma_a$, and $S_0 = \epsilon$. The Adams problem was discretized with 8$^\text{th}$ order finite elements, $S_8$ angular quadrature, and 8$^\text{th}$ order mesh. Convergence criteria $\epsilon_\text{conv} = 10^{-12}$ was used. The penalty term $\kappa^\text{IP}$ was not determined exactly the same as \cite{WangRagusaDSA}. Rather, an ad hoc value was used in order to assure convergence. This is the reason for increasing $\kappa^\text{IP}$ as $\epsilon$ decreases.
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+& \multicolumn{2}{c|}{without DSA} & \multicolumn{3}{c|}{with DSA} & \\\hline
+$\epsilon$ & \begin{tabular}{c} spectral\\radius \end{tabular} & no. iters & no. iters & \begin{tabular}{c} spectral\\radius \end{tabular} & $\kappa^\text{IP}$ & L$^2$ error \\
+\hline
+0.1 & 0.94 & 474 & 44 & 0.53 & $10^2$ & 0.048 \\\hline
+0.05 & 0.98 & 1662 & note 1 & note 1 & note 1 & 0.024 \\\hline
+0.01 & 0.9993 & $>10,000$ & 49 & 0.56 & $10^2$ & 0.0049 \\\hline
+$10^{-3}$ & 0.9999 & $>10,000$ & \begin{tabular}{c} 91\\\hline $>91$ \end{tabular} & \begin{tabular}{c} 0.76\\\hline 0.81 \end{tabular} & \begin{tabular}{c}$10^3$\\\hline $10^4$ \end{tabular} & 0.00049 \\\hline
+$10^{-4}$ & note 1 & note 1 & \begin{tabular}{c} note 2 \\\hline note 2 \\\hline note 2 \end{tabular} & \begin{tabular}{c} 0.66 (note 3) \\\hline 0.92 \\\hline 0.95 \end{tabular} & \begin{tabular}{c} $10^3$ \\\hline $10^4$\\\hline$10^5$ \end{tabular} & 0.000049 \\\hline
+$10^{-5}$ & note 1 & note 1 & \begin{tabular}{c} n/a \\\hline note 2 \end{tabular} & \begin{tabular}{c} $>1$ \\\hline 0.70 (note 3) \end{tabular} & \begin{tabular}{c} $10^3$ \\\hline $10^4$ \end{tabular} & 0.0000049 \\\hline
+$10^{-6}$ & note 1 & note 1 & \begin{tabular}{c} n/a \\\hline note 2 \end{tabular} & \begin{tabular}{c} $>1$ \\\hline 0.70 (note 3) \end{tabular} & \begin{tabular}{c} $10^4$ \\\hline $10^5$ \end{tabular} & 0.000012 \\\hline
+\end{tabular}}
+\caption{``Adams'' 2-D diffusion limit problem L$^2$ error between our solution and the reference solution for several values of $\epsilon$. Note 1: did not attempt. Note 2: did not run to convergence. Note 3: converges consistently until some (seemingly arbitrary) point, then becomes erratic.}
+\label{tab:2DDiffErr}
+\end{table}
+
+The results shown in Table \ref{tab:2DDiffErr} are varied. As we increase the optical thickness of the problem, we were able to converge toward a solution in a much more reasonable time with DSA than without. Thus, we have observed that we have the diffusion limit. However, this is not without some issues.
+
+During the solution to the Adams problem using DSA for $\epsilon = \left\{10^{-4}, 10^{-5}, 10^{-6} \right\}$, the DSA solution was observed to evolve smoothly until it reached a (seemingly arbitrary) point when it begins to behave erratically. The erratic DSA solutions don't begin affecting the scalar flux solution until the magnitude of the DSA solution is on the same order as the maximum scalar flux error between iterations $\left(O \left(10^{-11} \right) \right)$. Thus, the solutions to this problem for $\epsilon = \left\{10^{-4}, 10^{-5}, 10^{-6} \right\}$ are not fully converged. An example output is shown in Figure \ref{fig:probEpsilon1e4kappa1e3} to demonstrate that the spectral radius became erratic. This example is for $\epsilon = 10^{-4}$ where the spectral radius was consistently about 0.66 until iteration 51.
+
+\begin{figure}[!h]
+\includegraphics[scale=1]{../../Research/graphics/probEpsilon1e4kappa1e3}
+\caption{Partial output for Adams problem showing iteration number (Itr), maximum flux error between iterations (phi\_conv.max), spectral radius, and the L$^2$ error from the reference solution.}
+\label{fig:probEpsilon1e4kappa1e3}
+\end{figure}
+
+\FloatBarrier
+
+The next set of test problems are for a uniform infinite medium using Dirichlet boundary MIP DSA with a zero analytic solution (incidentally it is equivalent the the Adams problem just with a zero volumetric source term). Specifically, $\sigma_t = 1/\epsilon$, $\sigma_a = \epsilon$, $S = 0$, $\psi_\text{inc} = 0$, and analytic solution $\phi = S/\sigma_a = 0.0$. The source iteration begins with an initial guess of $\phi = 5$. This problem was discretized with $8^\text{th}$ order finite elements, $S_8$ angular quadrature, and $8^\text{th}$ order mesh. Convergence criteria $\epsilon_\text{conv} = 10^{-12}$ was used. Table \ref{tab:2DuniformDiffErr} illustrates various solution properties of these test problems.
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$\epsilon$ & no. iters & \begin{tabular}{c} spectral\\radius \end{tabular} & $\kappa^\text{IP}$ & L$^2$ error \\
+\hline
+0.1 & 47 & 0.53 & $10^3$ & $2.5 \times 10^{-13}$ \\\hline
+0.01 & 51 & 0.56 & $10^3$ & $3.4 \times 10^{-13}$  \\\hline
+$10^{-3}$ & 104 & 0.76 & $10^3$ & $1.6 \times 10^{-13}$ \\\hline
+$10^{-4}$ & 70 & 0.66 & $10^3$ & $6.0 \times 10^{-14}$ \\\hline
+$10^{-5}$ & \begin{tabular}{c} n/a \\\hline 81 \end{tabular} & \begin{tabular}{c} $>1$ \\\hline 0.70 \end{tabular} & \begin{tabular}{c} $10^3$ \\\hline $10^4$ \end{tabular} & \begin{tabular}{c} n/a \\\hline $7.4 \times 10^{-14}$ \end{tabular} \\\hline
+$10^{-6}$ & \begin{tabular}{c} n/a \\\hline 83 \end{tabular} & \begin{tabular}{c} $>1$ \\\hline 0.70 \end{tabular} & \begin{tabular}{c} $10^4$ \\\hline $10^5$ \end{tabular} & \begin{tabular}{c} n/a \\\hline $6.0 \times 10^{-14}$ \end{tabular} \\\hline
+\end{tabular}}
+\caption{2-D uniform infinite medium diffusion limit problem L$^2$ error between our solution and the reference solution for several values of $\epsilon$.}
+\label{tab:2DuniformDiffErr}
+\end{table}
+
+The erratic behavior is not observed in this problem. As seen in Figures \ref{fig:phiUniDiff1e-4log} and \ref{fig:DSAUniDiff1e-4}, the scalar flux and DSA solutions, respectively, show values on the order of $10^{-20}$, far beyond the point that the DSA began behaving erratically. This suggests a discrepancy associated with the volumetric source term.
+
+\begin{figure}[!h]
+\includegraphics[scale=0.3,trim={1cm 3cm 1cm 0},clip]{../../Research/graphics/phiUniDiff1e-4log}
+\caption{Uniform infinite medium diffusion limit scalar flux solution (log scale) for $\epsilon = 10^{-4}$ of Table \ref{tab:2DuniformDiffErr}.}
+\label{fig:phiUniDiff1e-4log}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[scale=0.3,trim={1cm 3cm 1cm 0},clip]{../../Research/graphics/DSAUniDiff1e-4}
+\caption{Uniform infinite medium diffusion limit DSA solution for $\epsilon = 10^{-4}$ of Table \ref{tab:2DuniformDiffErr}.}
+\label{fig:DSAUniDiff1e-4}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Strong Scatter with Discontinuous Boundary Conditions with DSA}
+
+This test problem was solved without DSA in Woods et al. \cite{WoodsHoDgfemXyCurved}. Implementing the Dirichlet boundary condition DSA reduced the number of source iterations to 37 $\left(\rho \approx 0.54 \right)$ using $\kappa_\text{MFEM} = 1/2 \cdot h_\perp / D = 150$ where $h_\perp = \left\{0.1, 0.02 \right\}$.  The modified convergence criteria was used where $\epsilon_\text{conv} = 10^{-12}$. Figures \ref{fig:TP2DSA} and \ref{fig:TP2DSAlog} illustrate the solution and the natural log of the solution, respectively. This problem did not display any erratic convergence behavior.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4,trim={1cm 3cm 5cm 1cm},clip]{../../Research/graphics/TP2DSA}
+\caption{Strong scatter with discontinuous boundary conditions problem solved with DSA. White regions indicate negative fluxes.}
+\label{fig:TP2DSA}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4,trim={1cm 3cm 5cm 1cm},clip]{../../Research/graphics/TP2DSAlog}
+\caption{Log of strong scatter with discontinuous boundary conditions problem solved with DSA. White regions indicate negative fluxes.}
+\label{fig:TP2DSAlog}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Material Discontinuity Stress Test with DSA}
+
+Adding DSA to the material discontinuity stress test of Woods et al. \cite{WoodsHoDgfemXyCurved} reduces the spectral radius to $\rho \approx 0.994$ using $\kappa_\text{MFEM} = 450$. A discussion of $\kappa_\text{MFEM}$ is necessary. Both $\kappa_\text{MFEM} = 400$ and $\kappa_\text{MFEM} = 500$ caused the source iteration to diverge. This parameter is supposed to vary based on $h_\perp^\pm$ and $D^\pm$. Homogeneous problems on a regular mesh can have a global $\kappa_\text{MFEM}$ but this heterogeneous problem will require multiple $\kappa_\text{MFEM}$ values at the various material interfaces. For now, this global value allows the source iteration to converge and is still much faster than without DSA altogether.
+
+This problem was solved using $S_4$ level-symmetric quadrature and 8$^\text{th}$ order finite elements. The modified convergence criteria was used where $\epsilon_\text{conv} = 10^{-12}$. An error occurred causing the calculation to stop every 900 iterations (about 55 minutes). Restarting the simulation from a restart file allowed this problem to converge according to the convergence criteria. This problem converged in $4027$ iterations. Figures \ref{fig:TP3DSA} and \ref{fig:TP3DSAlog} illustrate the scalar flux solution and the log of the scalar flux, respectively.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4,trim={1cm 3cm 1cm 1cm},clip]{../../Research/graphics/TP3DSA}
+\caption{Material discontinuity stress test solved with DSA. White regions indicate negative fluxes.}
+\label{fig:TP3DSA}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4,trim={1cm 3cm 1cm 1cm},clip]{../../Research/graphics/TP3DSAlog}
+\caption{Log of material discontinuity stress test solved with DSA. White regions indicate negative fluxes.}
+\label{fig:TP3DSAlog}
+\end{figure}
+
+\FloatBarrier
+
+This problem converged in significantly more iterations than the other test problems described above. Figure \ref{fig:TP3DSAError} illustrates the magnitude of the error between two successive iterations of scalar flux. Clearly, the slowest region to converge is within the highly scattering region near the very low and very high absorption regions.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4,trim={1cm 3cm 1cm 1cm},clip]{../../Research/graphics/TP3DSAError}
+\caption{Magnitude of scalar flux error between successive iterations for material discontinuity stress test. This calculation was performed with $S_8$ level-symmetric quadrature.}
+\label{fig:TP3DSAError}
+\end{figure}
+
+\FloatBarrier
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
