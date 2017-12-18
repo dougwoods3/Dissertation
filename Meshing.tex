@@ -3,9 +3,96 @@
 
 \begin{document}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Meshes with Curved Surfaces}
+The complicated shapes of each mesh zone create a challenge by having to solve the discretized equations for each unique mesh zone. We can avoid having to solve a unique set of equations for each mesh zone by transforming the mesh zone into the reference element. Each mesh zone will have a unique transformation but an identical set of equations to obtain the solution on the reference element.
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transformation}
+We set up the system of equations (Section \ref{sec:HOFiniteElements}) on each individual mesh zone after we transform it to the reference element. After performing the following integrations, we map the solution back to the physical element. The bi-quadratic mapping from the reference element to the physical element, shown in Figure \ref{fig:HOMapping}, has the following functional form
+\begin{flalign}
+\begin{bmatrix}
+x(\rho, \kappa) \\
+y(\rho, \kappa)
+\end{bmatrix}
+& = \sum_{i=1}^{J_k} \sum_{j=1}^{J_k}
+\begin{bmatrix}
+x_{ij} \\
+y_{ij}
+\end{bmatrix}
+N_i(\rho) N_j(\kappa)
+\end{flalign}
+%
+where
+\begin{flalign}
+N_l(\xi) & =
+\begin{cases}
+(2\xi-1)(\xi-1), & l = 1 \\
+4\xi(1-\xi), & l = 2 \\
+\xi(2\xi-1), & l = 3
+\end{cases}
+\end{flalign}
+%
+are the quadratic basis functions that have support points at typical locations shown in the left image of Figure \ref{fig:HOMapping}.  The $(x_{ij}, y_{ij})$ coordinates are the locations of the support points in the physical element and are generally known. For example, the node $(x_{12},y_{12})$ is the location on the physical zone that is mapped from $(\rho,\kappa)=(0,0.5)$ on the reference element.
+
+\begin{figure}[!htb]
+\centering
+\hspace{-25pt}
+\begin{minipage}[c]{7.25cm}
+\raggedright
+\begin{tikzpicture}
+\begin{axis}[
+	axis lines=left,
+	width=6.5cm,
+	height=6.5cm,
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    xlabel={$\rho$},
+    ylabel={$\kappa$},
+    ]
+    \addplot[only marks, mark=*, mark size=1, color=blue, mark options={solid, fill=blue}] table [x index=0, y index=1]{./graphics/MeshReference.dat};
+    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshNodes.dat};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\begin{minipage}[c]{0.75cm}
+\centering
+{\Huge$\mapsto$}
+\end{minipage}
+\begin{minipage}[c]{7.5cm}
+\raggedleft
+\begin{tikzpicture}
+\begin{axis}[
+	axis lines=left,
+	width=6.5cm,
+	height=6.5cm,
+    xmin=0.9, xmax=2.5,
+    ymin=0.8, ymax=2.5,
+    xlabel={$x$},
+    ylabel={$y$},
+    ]
+    \addplot[only marks, mark=*, mark size=1, color=red, mark options={solid, fill=red}] table [x index=0, y index=1]{./graphics/MeshTransform.dat};
+    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshTransNodes.dat};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Example of mapping the reference element to a physical element. {\color{red}Switch these around to map the physical element to the reference element.}}
+\label{fig:HOMapping}
+\end{figure}
+
+The determinant of the Jacobian of the transformation,
+\begin{flalign}
+\det(J) & =
+\begin{vmatrix}
+\frac{\partial x}{\partial \rho} & \frac{\partial y}{\partial \rho} \\
+\frac{\partial x}{\partial \kappa} & \frac{\partial y}{\partial \kappa}
+\end{vmatrix},
+\end{flalign}
+%
+is required for the volume integrations in the next section.
+
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}
