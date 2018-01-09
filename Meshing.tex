@@ -5,9 +5,11 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Meshes with Curved Surfaces}
-The complicated shapes of each mesh zone create a challenge by having to solve the discretized equations for each unique mesh zone. We can avoid having to solve a unique set of equations for each mesh zone by transforming the mesh zone into the reference element. Each mesh zone will have a unique transformation but an identical set of equations to obtain the solution on the reference element.
+The complicated shapes of each mesh zone create a challenge by having to solve the discretized equations for each unique mesh zone. We can avoid having to solve a unique set of equations for each mesh zone by transforming the mesh zone into the reference element. Each mesh zone will have a unique transformation but an identical set of basis functions to obtain the solution on the reference element.
 
-
+{\color{red}
+These meshes add complications to the numerical methods used to solve the transport equation. In particular, cycles can be present during the spatial sweep of the mesh. It is common to solve for a single mesh zone using incident angular flux information and propagate that angular flux from mesh zone to mesh zone, sweeping through the grid. However, if any particular mesh zone has both incident and outgoing angular fluxes to another mesh zone, they depend upon each other in a cyclic manner. ``Breaking the cycle'' is some fashion is necessary to perform the numerical computation. Alternatively, instead of sweeping through the grid, we utilize MFEM to generate the solution matrix for all of the mesh zones for the entire problem. This is computationally intensive, but it bypasses the need to consider any cycles that may occur.
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transformation}

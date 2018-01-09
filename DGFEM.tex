@@ -11,6 +11,59 @@ This section describes the methods to be carried out to accomplish the proposed 
 
 \subsection{Basis Functions}
 
+The basis functions are mesh zone dependent. So, by transforming each physical element into the reference element, the basis functions are uniform for each physical element. The basis functions are allowed to be unique to each element. However, in practice, each mesh element is transformed to the reference element, removing the mesh dependence for the basis functions. 
+
+One requirement for the basis functions is that they are unity at the integration point they ``live'' at and zero at all of the others. In 2-D, the general form of the first-order polynomial basis function is
+\begin{flalign}
+b(x,y) & = a x y + b x + c y + d,
+\end{flalign}
+%
+and the second-order basis function,
+\begin{flalign}
+b(x,y) & = a x^2 y^2 + b x^2 y + c x^2 + d x y^2 + e x y + f x + g y^2 + h y + j.
+\end{flalign}
+%
+The location of the integration points is important. We may place these evenly across the reference element or at Gaussian quadrature locations. On the unit square $[0,1] \times [0,1]$, the Gaussian integration points are located at the cross product of the nodes on $[0,1]$. Listed for linear, quadratic, and cubic finite elements in Table \ref{tab:GaussianQuadrature}, the Gaussian integration point locations were transformed from the traditional $[-1,1]$ to our reference element length $[0,1]$.
+
+\begin{table}[!htb]
+\centering
+{\renewcommand{\arraystretch}{2}
+\begin{tabular}{|c|c|c|}
+\hline
+FE order & Points on $[-1,1]$ & Points on $[0,1]$ \\\hline
+1 & $\displaystyle \pm \frac{1}{\sqrt{3}}$ & \begin{tabular}{c} $\displaystyle \frac{1}{3 + \sqrt{3}}$ \\ $\displaystyle 1- \frac{1}{3+\sqrt{3}}$ \end{tabular} \\\hline
+2 & \begin{tabular}{c} 0 \\ $\displaystyle \pm \sqrt{\frac{3}{5}}$ \end{tabular} & \begin{tabular}{c} $\displaystyle \frac{1}{5 + \sqrt{15}}$ \\ 0.5 \\ $\displaystyle 1- \frac{1}{5+\sqrt{15}}$ \end{tabular} \\\hline
+3 & \begin{tabular}{c} $\displaystyle \pm \sqrt{\frac{3}{7} - \frac{2}{7} \sqrt{\frac{6}{5}}}$ \\ $\displaystyle \pm \sqrt{\frac{3}{7} + \frac{2}{7} \sqrt{\frac{6}{5}}}$ \end{tabular} & \begin{tabular}{c} $\displaystyle \frac{10+\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle \frac{10-\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle 1- \frac{10+\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle 1- \frac{10-\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \end{tabular} \\\hline
+\end{tabular}}
+\caption{Gaussian quadrature locations.}
+\label{tab:GaussianQuadrature}
+\end{table}
+
+Once the finite element order and the set of integration points is determined, the linear system can be arranged to determine the coefficients. For example, to determine the first-order basis function that ``lives'' at integration point $(x_1, y_1)$ (and hence is equal to unity at that integration point and is zero at the remaining three), we assemble the system of equations
+\begin{flalign}
+\begin{bmatrix}
+x_1 y_1 & x_1 & y_1 & 1 \\
+x_2 y_2 & x_2 & y_2 & 1 \\
+x_3 y_3 & x_3 & y_3 & 1 \\
+x_4 y_4 & x_4 & y_4 & 1
+\end{bmatrix}
+\begin{bmatrix}
+a \\
+b \\
+c \\
+d
+\end{bmatrix}
+& =
+\begin{bmatrix}
+1 \\
+0 \\
+0 \\
+0
+\end{bmatrix}.
+\end{flalign}
+%
+Moving the 1 inside the solution vector on the right-hand-side determines which basis function coefficients will be obtained. The vector $\left[0,0,1,0 \right]^T$ will return the basis function for the third integration point at $(x_3, y_3)$.
+
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}
