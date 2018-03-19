@@ -3,6 +3,9 @@
 
 \begin{document}
 
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\RZ\ Geometry}
 \label{sec:RZ}
@@ -323,6 +326,162 @@ to obtain our angular and spatially discretized \RZ\ transport equation.
 
 
 
+{\color{blue}WE PERFORMED SOME STUDIES TO MAKE SURE IT'S RIGHT...
+
+
+
+We first solved a uniform infinite medium problem with $\sigma_t=1.0$, $\sigma_s=0.3$, and $S_0=0.7$ for $1^\text{st}$-order FEM on a $2^\text{nd}$-order mesh using $S_4$ level-symmetric angular quadrature. The solution, shown in Figure \ref{fig:RZuimS401R2D2}, demonstrates we get the exact flat solution of $\phi=1.0$.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{../../Research/graphics/RZuimS4O1R2D2}
+\caption{Uniform infinite medium solution.}
+\label{fig:RZuimS401R2D2}
+\end{figure}
+
+We tested several MMS problems as well. First, we defined the manufactured solution
+\begin{flalign}
+\psi & = (1-\mu^2)(1-\xi^2) \sin \left(\frac{\pi}{2}r \right) \cos(\pi z)
+\label{eq:MMSGleicherwAngular}
+\end{flalign}
+
+\noindent with $2^\text{nd}$-order FEM, Orthogonal quadrilateral mesh, $\sigma_t=1.0$, $\sigma_s=0.3$, $S_0=0.7$, $S_4$ level-symmetric angular quadrature. The solution is shown in Figure~\ref{fig:RZGleicherS4O2R1} and the L$^2$-error was 0.132. 
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{../../Research/graphics/RZGleicherS4O2R1}
+\caption{MMS solution for Equation~\ref{eq:MMSGleicherwAngular}.}
+\label{fig:RZGleicherS4O2R1}
+\end{figure}
+
+Removing the angular dependence in the manufactured solution,
+\begin{flalign}
+\psi & = \sin \left(\frac{\pi}{2}r \right) \cos(\pi z),
+\label{eq:MMSGleicherNoAngular}
+\end{flalign}
+
+\noindent increased the accuracy of our DGFEM approximation. Shown in Figure~\ref{fig:RZGleicherS4O2R1noAng}, the L$^2$-error was reduced to $4.59 \times 10^{-5}$.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{../../Research/graphics/RZGleicherS4O2R1noAng}
+\caption{MMS solution for Equation~\ref{eq:MMSGleicherNoAngular}.}
+\label{fig:RZGleicherS4O2R1noAng}
+\end{figure}
+
+
+}
+
+Bailey et al.~\cite{BaileyDFEMCylindrical} showed $2^\text{nd}$-order convergence using PWLD and BLD using the manufactured solution
+\begin{flalign}
+\psi_\text{MMS}(r,z) & = (\sin(\pi r)+1-r) \sin(\pi z),
+\label{eq:MMSBailey}
+\end{flalign}
+%
+\noindent for $\sigma_t = 3 \text{ cm}^{-1}$ and $\sigma_s=0.9999 \sigma_t$. We solved this same problem using $p=\{1,2,4,6,8\}$ on an orthogonal and $2^\text{nd}$-order curved mesh using $S_8$ level-symmetric angular quadrature. The incident angular flux is equal to Equation \ref{eq:MMSBailey}. Figure~\ref{fig:RZBaileyS4O2R2D2} shows the $p=2$ solution on a $2^\text{nd}$-order mesh.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{../../Research/graphics/RZBaileyS4O2R2D2}
+\caption{MMS solution to Equation~\ref{eq:MMSBailey}.}
+\label{fig:RZBaileyS4O2R2D2}
+\end{figure}
+
+The spatial convergence study performed by Bailey et al. demonstrated $2^\text{nd}$-order converge for their $1^\text{st}$-order methods. Figures~\ref{fig:RZBaileyS4O2R2D2Ortho} and~\ref{fig:RZBaileyS4O2R2D22Mesh} demonstrate $O(p+1)$ convergence on an orthogonal mesh and $2^\text{nd}$-order mesh, respectively. Reference lines are also provided for comparison.
+
+\begin{figure}[!htb]
+\centering
+\begin{subfigure}[b]{0.6\textwidth}
+\footnotesize
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=0.9\textwidth,
+    %height=0.9\textwidth,
+    grid=major,
+    xlabel={$\sqrt{\text{N}_\text{unknowns}}$},
+    ylabel={L$^2$ error},
+  	xmode=log,
+  	ymode=log,
+  	xmin=10,xmax=1e3,
+  	ymin=1e-14,ymax=1e1,
+  	legend style={at={(1.1,1.0)},anchor=north east},
+  	]
+\
+\addplot[mark=*, only marks, mark size=2, draw=black, mark options={solid, fill=black}] table [x=un1, y=fe1]{../../Research/graphics/RZBaileyMMSS4D0.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=triangle*, only marks, mark size=3, draw=red, mark options={solid, fill=red}] table [x=un2, y=fe2]{../../Research/graphics/RZBaileyMMSS4D0.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=square*, only marks, mark size=2, draw=blue, mark options={solid, fill=blue}] table [x=un4, y=fe4]{../../Research/graphics/RZBaileyMMSS4D0.dat};
+\addlegendentry{$p=4$}
+
+\addplot[black] table[row sep=crcr] {
+12 0.015 \\
+384 1.4648e-5 \\};
+\addlegendentry{$O(N^{-2})$}
+
+\addplot[red] table[row sep=crcr] {
+12 0.005 \\
+384 1.5259e-7 \\};
+\addlegendentry{$O(N^{-3})$}
+
+\addplot[blue] table[row sep=crcr] {
+12	2e-4 \\
+384	5.9605e-12 \\};
+\addlegendentry{$O(N^{-5})$}
+
+  \end{axis}
+\end{tikzpicture}
+\caption{Orthogonal quadrilateral mesh.}
+\label{fig:RZBaileyS4O2R2D2Ortho}
+\end{subfigure}
+\begin{subfigure}[b]{0.6\textwidth}
+\centering
+\footnotesize
+\begin{tikzpicture}
+  \begin{axis}[
+    width=0.9\textwidth,
+    %height=0.9\textwidth,
+    grid=major,
+    xlabel={$\sqrt{\text{N}_\text{unknowns}}$},
+    ylabel={L$^2$ error},
+  	xmode=log,
+  	ymode=log,
+  	xmin=10,xmax=1e3,
+  	ymin=1e-14,ymax=1e1,
+  	legend style={at={(1.1,1.0)},anchor=north east},
+  	]
+\addplot[mark=*, only marks, mark size=2, draw=black, mark options={solid, fill=black}] table [x=un1, y=fe1]{../../Research/graphics/RZBaileyMMSS4D2.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=triangle*, only marks, mark size=3, draw=red, mark options={solid, fill=red}] table [x=un2, y=fe2]{../../Research/graphics/RZBaileyMMSS4D2.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=square*, only marks, mark size=2, draw=blue, mark options={solid, fill=blue}] table [x=un4, y=fe4]{../../Research/graphics/RZBaileyMMSS4D2.dat};
+\addlegendentry{$p=4$}
+
+\addplot[black] table[row sep=crcr] {
+12 0.0625 \\
+384 6.1e-5 \\};
+\addlegendentry{$O(N^{-2})$}
+
+\addplot[red] table[row sep=crcr] {
+12 0.0156 \\
+384 4.77e-7 \\};
+\addlegendentry{$O(N^{-3})$}
+
+\addplot[blue] table[row sep=crcr] {
+12	2e-3 \\
+384	5.9605e-11 \\};
+\addlegendentry{$O(N^{-5})$}
+
+  \end{axis}
+\end{tikzpicture}
+\caption{$2^\text{nd}$-order curved mesh.}
+\label{fig:RZBaileyS4O2R2D22Mesh}
+\end{subfigure}
+\caption{L$^2$-norm of the errors from the manufactured solution and reference lines, where $N_\text{unknowns}~=~N_\text{cells}(p~+~1)^2$.}
+\end{figure}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Lumping}
@@ -331,19 +490,180 @@ to obtain our angular and spatially discretized \RZ\ transport equation.
 \subsection{Diffusion Synthetic Acceleration}
 
 
-
+\pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Symmetry Preservation}
+We want \RZ\ geometry to solve and preserve 1-dimensional spherical solutions. The transport equation in spherical geometry is
+\begin{flalign}
+\vec{\Omega} \vd \grad \psi & = \frac{\partial \psi}{\partial r} \vec{\Omega} \vd \grad r + \frac{\partial \psi}{\partial \mu} \vec{\Omega} \vd \grad \mu \\
+& = \mu \frac{\partial \psi}{\partial r} + \frac{(1-\mu^2)}{r} \frac{\partial \psi}{\partial \mu} \\
+& = \frac{\mu}{r^2} \frac{\partial}{\partial r} (r^2 \psi) + \frac{\partial}{\partial \mu} \frac{\left[(1-\mu^2) \psi \right]}{r} \\
+\mu \frac{\partial}{\partial r} (r^2 \psi) + r \frac{\partial}{\partial \mu} ((1-\mu^2) \psi) + r^2 \sigma_t \psi & = \frac{1}{4 \pi} \sigma_s \phi + \frac{1}{4 \pi} S_0.
+\end{flalign}
+%
+{\color{red}
+\noindent In 1-dimensional geometry, this simplifies to
+\begin{flalign}
+\mu \frac{\partial \psi}{\partial r} + \sigma_t \psi & = \frac{1}{4 \pi} \sigma_s \phi + \frac{1}{4 \pi} S_0.
+\end{flalign}
+%
+We can solve this for $\psi$.
+\begin{flalign}
+\frac{\partial \psi(r)}{\partial r} e^{\sigma_t r / \mu} + \frac{\sigma_t}{\mu} \psi(r) e^{\sigma_t r / \mu} & = \frac{1}{4 \pi \mu} \left(\sigma_s \phi + S_0\right) e^{\sigma_t r/ \mu} \\
+\frac{\partial}{\partial r} \left(\psi(r) e^{\sigma_t r/\mu} \right) & = \frac{1}{4 \pi \mu} \left(\sigma_s \phi + S_0\right) e^{\sigma_t r/ \mu} \\
+\int \frac{\partial}{\partial r^\prime} \left(\psi(r^\prime) e^{\sigma_t r^\prime/ \mu} \right) dr^\prime & = \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime \\
+\psi(r) e^{\sigma_t r/ \mu} - c & = \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime \\
+\psi(r) & = e^{-\sigma_t r/ \mu} \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime + c e^{-\sigma_t r/ \mu} \\
+\psi(1)=1 & = e^{-\sigma_t/ \mu} \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime + c e^{-\sigma_t/ \mu} \\
+c & = e^{\sigma_t/\mu} - \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime
+\end{flalign}
+\begin{multline}
+\psi(r) = e^{-\sigma_t r/ \mu} \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime + \\
+\left[e^{\sigma_t/\mu} - \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime \right] e^{-\sigma_t r/ \mu}
+\end{multline}
+\begin{multline}
+\psi(r) = e^{-\sigma_t r/ \mu} \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime + \\
+e^{(1-r)\sigma_t /\mu} - e^{-\sigma_t r/ \mu} \frac{1}{4 \pi \mu} \int \left(\sigma_s \phi (r^\prime)+ S_0 \right) e^{\sigma_t r^\prime/ \mu} dr^\prime
+\end{multline}
+\begin{flalign}
+\psi(r) & = e^{(1-r)\sigma_t/\mu}
+\end{flalign}
+}
+
+We use MMS to solve a 1-D spherical problem using the \RZ\ geometry spatial discretization. The manufactured solution is
+\begin{flalign}
+\psi_\text{MMS} (\rho) & = \sin(\pi \rho) + 2 -\rho,
+\end{flalign}
+%
+\noindent where $\rho = \sqrt{r^2 + z^2}$ is the distance from the origin (i.e. the spherical radius). Plugging this into the \RZ\ transport equation,
+\begin{multline}
+\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+= \frac{1}{2 \pi} \sigma_s \phi_\text{MMS} + \frac{1}{2 \pi} S_0.
+\end{multline}
+%
+\noindent Integrating $\psi_\text{MMS}$ over all directions reveals $\phi_\text{MMS}$,
+\begin{multline}
+\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+= \sigma_s \left(\sin (\pi \rho)+2-\rho \right) + \frac{1}{2 \pi} S_0.
+\end{multline}
+%
+\noindent We perform some simplifications,
+{\color{blue}
+\begin{multline}
+\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+= \sigma_s \left(\sin (\pi \rho)+2-\rho \right) + \frac{1}{2 \pi} S_0.
+\end{multline}
+}
+
+Because of the angular derivative in the streaming term, we reduce the influence of the direction dependence as much as possible by using higher order level-symmetric angular quadrature.
+
+We evaluate the relative asymmetry by calculating the averages of all nodes at each $\rho$ value and
+\begin{flalign}
+\phi_\text{sym} (\rho, \theta) & = \frac{\phi_\text{code}(\rho, \theta) - \phi_\text{avg}(\rho)}{\phi_\text{avg}(\rho)},
+\end{flalign}
+%
+\noindent where
+\begin{flalign}
+\phi_\text{avg}(\rho) & = \frac{1}{N_\text{nodes}(\rho)} \sum_{i=1}^{N_\text{nodes}(\rho)} \phi(\rho,\theta_i)
+\end{flalign}
+%
+\noindent is the average scalar flux at all nodes at the same spherical radius $\rho$.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Other}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Material Discontinuity Stress Test}
+We adapted this problem from Palmer \cite{PalmerDissertation} and solved it without DSA in Woods et al. \cite{WoodsHoDgfemXyCurved}. There are five different material regions described in Table \ref{tab:MaterialDiscontinuityProperties} and Figure \ref{fig:MaterialDiscontinuityMesh}.
+
+\begin{table}[!htb]
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Material Region & $\sigma_t$ cm$^{-1}$ & $\sigma_s$ cm$^{-1}$ & $S_0 \text{ cm}^{-2} \text{ s}^{-1}$ \\\hline
+Source & 1.0 & 1.0 & 1.0 \\
+Very thin absorber & 0.0001 & 0.0 & 0.0 \\
+Thick absorber & 10.0 & 0.0 & 0.0 \\
+Very thick absorber & 100.0 & 0.0 & 0.0 \\
+Very thick scatterer & 1000.0 & 1000.0 & 0.0 \\
+\hline
+\end{tabular}}
+\caption{Material discontinuity stress test with MIP DSA material properties.}
+\label{tab:MaterialDiscontinuityProperties}
+\end{table}
+
+\begin{figure}[!hp]
+\centering
+\begin{tikzpicture}[scale=0.8]
+\node [below] at (0,-0.25) {0};
+\node [left] at (-0.25,0) {0};
+\node [left] at (-0.25,10) {$z = 1$ cm};
+\node [below] at (10,-0.25) {$r = 1$ cm};
+\node [below] at (5,-0.5) {Vacuum boundary};
+\node [above] at (5,10.25) {Vacuum boundary};
+\node [right] at (10.25,5) {\rotatebox{90}{Vacuum boundary}};
+\node [left] at (-0.5,5) {\rotatebox{90}{Reflecting boundary}};
+\draw [fill=gray] (0,0) rectangle (2,10);
+\draw [pattern= north west lines] (2,0) rectangle (6,2);
+\draw [pattern=crosshatch dots] (2,2) rectangle (4,10);
+\draw [pattern=crosshatch] (6,0) rectangle (10,2);
+\draw (0,0) grid (10,10);
+\node [fill=white] at (1,5) {Source};
+\node [align=center,fill=white] at (4,1) {Very thin\\absorber};
+\node [align=center,fill=white] at (3,6) {Thick\\absorber};
+\node [align=center,fill=white] at (8,1) {Very thick\\absorber};
+\node [align=center,fill=white] at (7,6) {Very thick\\scatterer};
+\end{tikzpicture}
+\caption{Material discontinuity stress test with MIP DSA problem geometry; materials defined in Table \ref{tab:MaterialDiscontinuityProperties}.}
+\label{fig:MaterialDiscontinuityMesh}
+\end{figure}
+
+This problem has opacities that range several orders of magnitude, resulting in strong material discontinuities. We also introduce anisotropic incident intensities into the scattering region by preferentially attenuating intensities that are not perpendicular to the thick absorber. We expect some degradation in the DSA in problems with strong material discontinuities \cite{WangDissertation}. We also expect boundary layers to form from the anisotropic incident intensities \cite{AdamsDFEMDiffLimit}. The solution is shown in Figure~\ref{fig:RZMultiMaterial}. 
+
+\begin{figure}[!htb]
+\centering
+\begin{subfigure}{0.8\textwidth}
+\centering
+\includegraphics[scale=0.3,trim={50pt 80pt 50pt 80pt},clip]{../../Research/graphics/TP3RZS4e2C2}
+\captionof{figure}{Scalar flux.}
+\label{fig:TP2RZS4e4C2}
+\end{subfigure}
+\begin{subfigure}{0.8\textwidth}
+\centering
+\includegraphics[scale=0.3,trim={50pt 80pt 50pt 80pt},clip]{../../Research/graphics/TP3RZS4e2C2log}
+\caption{Log of scalar flux.}
+\label{fig:TP2RZS4e4C2}
+\end{subfigure}
+\caption{Solution to multi-material stress test. White regions indicate negative scalar fluxes. {\color{red}This was solved without DSA and was only allowed 10,000 source iterations to complete.}}
+\label{fig:RZMultiMaterial}
+\end{figure}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Reflecting Boundary Conditions}
 
 To incorporate reflecting boundary conditions, we will ``guess'' the incident angular fluxes, update them with outgoing angular fluxes from the previous iteration, and adapt a convergence criterion for those fluxes. Along the z-axis, the reflection for direction $\vec{\Omega} = (\mu, \eta, \xi)$ is $\vec{\Omega}_R = (-\mu, \eta, \xi)$.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Reflecting Boundary Conditions}
+{\color{red}This may not warrant an entire subsection.}
 
+Reflecting boundaries are dependent upon the direction of the outgoing angular flux, $\vec{\Omega}_m$. The reflected incident direction is
+\begin{flalign}
+\vec{\Omega}^R & = \vec{\Omega}_m - 2 \left(\vec{\Omega}_m \vd \hat{n} \right) \hat{n}
+\end{flalign}
+%
+where $\vec{\Omega}_m$ is the outgoing direction and $\hat{n}$ is the unit normal vector on the boundary (pointing outward). We apply a Dirichlet boundary condition for the angular flux in the reflected direction,
+\begin{flalign}
+\psi^b(\vec{r},\vec{\Omega}^R) & = \psi_m
+\end{flalign}
 
 
 %\bibliographystyle{apalike}
