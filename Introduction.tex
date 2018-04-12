@@ -4,14 +4,16 @@
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+The radiation transport equation --- nuclear reactors, medical industry, HEDP.
 
-There are several applications for the thermal radiation transport (TRT) equation for nuclear fusion. Two of which include astrophysics such as stars or supernovae \cite{Castor_Rad_Hydro}, and inertial confinment fusion such as the National Ignition Facility\footnote{\url{https://lasers.llnl.gov}} (NIF). Nuclear fusion occurs in the high energy density physics (HEDP) regime where mass and energy densities of a material are very high \cite{DrakeHEDPPaper, Castor_Rad_Hydro}. Since material temperatures are very high, materials emit black body radiation in tremendous quantities. This thermal radiation field deposits energy back to the material influencing the material internal energy, temperature, and density. The radiation field can exchange enough momentum with the material that it directly affects the fluid motion \cite{Castor_Rad_Hydro}. Radiation transport and material absorption and emission are interdependent mechanisms that must be modeled simultaneously to obtain an energy distribution throughout the material. The material may also be exposed to additional hydrodynamic forces that change pressures, introduce density fluctuations, and cause fluid motion. In turn, the motion and energy density of the fluid affects the location and quantity of radiation emission. This complicated system of thermal radiation transport with hydrodynamics is studied in radiation hydrodynamics. While all of the forces in these HEDP systems are important, we can study some of the effects independently. For instance, we study hydrodynamics separately from TRT.
 
-The staggered grid hydrodynamics (SGH) approach is considered a traditional approach that uses the finite difference or finite volume methods, and has to compensate for calculating the spatial gradients, which are highly dependent on the mesh resolution \cite{DobrevHOFEMHydro}. The finite element method (FEM) has been employed, approximating the thermodynamic variables as piecewise constant and the kinematic variables as linear continuous\cite{ScovazziQ1P0Hydro}, and higher order finite elements \cite{DobrevCurvilinearFEMHydro}.
+There are several applications for the thermal radiation transport (TRT) equation for nuclear fusion. Two of which include astrophysics such as stars or supernovae~\cite{Castor_Rad_Hydro}, and inertial confinment fusion such as the National Ignition Facility\footnote{\url{https://lasers.llnl.gov}} (NIF). Nuclear fusion occurs in the high energy density physics (HEDP) regime where mass and energy densities of a material are very high~\cite{DrakeHEDPPaper, Castor_Rad_Hydro}. Since material temperatures are very high, materials emit black body radiation in tremendous quantities. This thermal radiation field deposits energy back to the material influencing the material internal energy, temperature, and density. The radiation field can exchange enough momentum with the material that it directly affects the fluid motion~\cite{Castor_Rad_Hydro}. Radiation transport and material absorption and emission are interdependent mechanisms that must be modeled simultaneously to obtain an energy distribution throughout the material. The material may also be exposed to additional hydrodynamic forces that change pressures, introduce density fluctuations, and cause fluid motion. In turn, the motion and energy density of the fluid affects the location and quantity of radiation emission. This complicated system of thermal radiation transport with hydrodynamics is studied in radiation hydrodynamics. While all of the forces in these HEDP systems are important, we can study some of the effects independently. For instance, we study hydrodynamics separately from TRT.
 
-Lawrence Livermore National Laboratory (LLNL) is developing a hydrodynamics code called BLAST.\footnote{https://computation.llnl.gov/project/blast/} \cite{DobrevHOFEMHydro}. It solves the Euler equations using a general finite element method (FEM) on meshes with curved surfaces for the conservation of mass, energy, and momentum of a fluid \cite{DobrevCurvilinearFEMHydro}. Novel features include: higher order elements to represent the thermodynamic and kinematic variables, and meshes with curved surfaces. Compared to SGH, Dobrev et al. \cite{DobrevCurvilinearFEMHydro} demonstrated their method can more accurately model flow geometry, symmetry of radial flow, and an increased resolution of a shock front saying their method has the ability to model the shock within a single mesh element. These improvements have reduced some of the numerical errors that have been exhibited by previous methods.
+The staggered grid hydrodynamics (SGH) approach is considered a traditional approach that uses the finite difference or finite volume methods, and has to compensate for calculating the spatial gradients, which are highly dependent on the mesh resolution~\cite{DobrevHOFEMHydro}. The finite element method (FEM) has been employed, approximating the thermodynamic variables as piecewise constant and the kinematic variables as linear continuous\cite{ScovazziQ1P0Hydro}, and higher order finite elements~\cite{DobrevCurvilinearFEMHydro}.
 
-BLAST utilizes MFEM \cite{MFEM_Web}, a general finite element library also being developed at LLNL, to spatially discretize using the high order FEM on meshes with curved surfaces. This proposed TRT research could be combined with a hydrodynamics code such as BLAST to develop a radiation hydrodynamics package to better model HEDP problems such as those produced during inertial confinement fusion at the NIF. The integrated radiation hydrodynamics code will need each physics package to numerically solve the same physical problem and communicate between packages. Hence, it is advantageous to utilize the same general finite element library when considering the integration of code packages.
+Lawrence Livermore National Laboratory (LLNL) is developing a hydrodynamics code called BLAST.\footnote{https://computation.llnl.gov/project/blast/}~\cite{DobrevHOFEMHydro}. It solves the Euler equations using a general finite element method (FEM) on meshes with curved surfaces for the conservation of mass, energy, and momentum of a fluid~\cite{DobrevCurvilinearFEMHydro}. Novel features include: higher order elements to represent the thermodynamic and kinematic variables, and meshes with curved surfaces. Compared to SGH, Dobrev et al.~\cite{DobrevCurvilinearFEMHydro} demonstrated their method can more accurately model flow geometry, symmetry of radial flow, and an increased resolution of a shock front saying their method has the ability to model the shock within a single mesh element. These improvements have reduced some of the numerical errors that have been exhibited by previous methods.
+
+BLAST utilizes MFEM~\cite{MFEM_Web}, a general finite element library also being developed at LLNL, to spatially discretize using the high order FEM on meshes with curved surfaces. This proposed TRT research could be combined with a hydrodynamics code such as BLAST to develop a radiation hydrodynamics package to better model HEDP problems such as those produced during inertial confinement fusion at the NIF. The integrated radiation hydrodynamics code will need each physics package to numerically solve the same physical problem and communicate between packages. Hence, it is advantageous to utilize the same general finite element library when considering the integration of code packages.
 
 This chapter introduces TRT and establishes our motivation for using the proposed methods. In Section \ref{sec:TRTIntro}, we give a brief introduction to the TRT equations and nomenclature. In Section \ref{sec:DiscretizationIntro}, we describe various discretization methods used to solve the TRT equations. In Section \ref{sec:DiffLimitIntro}, we describe the diffusion limit and it's application to optically thick problems found in HEDP regimes. Finally, in Section \ref{sec:OutlineIntro}, we outline the remained of this research proposal.
 
@@ -27,6 +29,7 @@ The steady-state, mono-energetic radiation transport equation,
 \noindent describes the angular flux $\psi(\vec{x},\vec{\Omega})$, which is a function of position $(\vec{x})$ and direction of travel $(\vec{\Omega})$. We also define the scalar flux by
 \begin{flalign}
 \phi(\vec{x}) & = \int_{4 \pi} \psi(\vec{x}, \vec{\Omega}^\prime) d \Omega^\prime,
+\label{eq:ScalarFluxIntegral}
 \end{flalign}
 %
 \noindent which accounts for the angular fluxes in all directions at spatial position $\vec{x}$. Both the angular and scalar fluxes describe a particle density in a phase space denoted by their dependent variables and have units $\text{cm}^{-2} \text{s}^{-1}$. In general, the total macroscopic cross section, $\sigma_t(\vec{x})=\varsigma_t(\vec{x}) N(\vec{x})$, is a property of the microscopic total cross section, $\varsigma_t(\vec{x}) \text{ cm}^{2}$, and the number density of the material, $N(\vec{x}) \text{ cm}^{-3}$. The absorption and scattering cross sections are related to the total cross section by $\sigma_t(\vec{x})=\sigma_a(\vec{x}) + \sigma_s(\vec{x})$. Additionally, the isotropic volumetric source, $S_0(\vec{x})/4 \pi$ is some isotropically emitting external source (e.g., fission neutrons or blackbody radiation).
@@ -41,8 +44,13 @@ Alternatively, deterministic methods solve the radiation transport equation for 
 \subsection{Discretization}
 \label{sec:DiscretizationIntro}
 
-Physically, 3-dimensional space is continuous: a particle could exist at any one of an infinite number of locations. Numerically, it is impossible to compute a solution at an infinite number of locations so we discretize the spatial domain into a small subset of locations. Similarly, a particle can travel in an infinite number of directions so we approximate it traveling in only a few. Discretizing the direction of travel by using the discrete ordinates (\SN) method \cite{discrete_ordinates} is common. Particles with various energies may behave or interact with material differently. It is common to approximate an infinite number of particle energies by grouping them into a finite number of energy groups. If a problem evolves through time, we discretize the time continuum with small discrete steps through time. In particular, this research discretizes the energy domain into one group, thereby making the problem energy independent. We also assume the solution of the transport equation has reached steady-state, making the problem time independent. We discretize the two remaining dependent variables (space and direction of travel) but the spatial discretization is the main focus of this research.
+Physically, 3-dimensional space is continuous: a particle could exist at any one of an infinite number of locations. Numerically, it is impossible to compute a solution at an infinite number of locations so we discretize the spatial domain into a small subset of locations. Similarly, a particle can travel in an infinite number of directions so we approximate it traveling in only a few. Discretizing the direction of travel by using the discrete ordinates (\SN) method~\cite{discrete_ordinates} is common. Particles with various energies may behave or interact with material differently. It is common to approximate an infinite number of particle energies by grouping them into a finite number of energy groups. If a problem evolves through time, we discretize the time continuum with small discrete steps through time. Ideally, we would model the continuous phase space because it describes the physical behavior of neutral particles. Since we cannot account for an infinite number of points on a continuum, we must make these discrete approximations. In this light, we discretize each of the continuous variables to approximate each as closely as practical. In general, this can mean refining the discretization, e.g., refining the spatial mesh or using a higher order discrete ordinates approximation. However, the cost of higher accuracy is increased computational time, which may become prohibitively expensive.
 
+This research discretizes the energy domain into one group, thereby making the problem energy independent. We also assume the solution of the transport equation has reached steady-state, making the problem time independent. We discretize the two remaining dependent variables (space and direction of travel) where the spatial discretization is the main focus of this research.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Direction of Travel Discretization}
+\label{subsec:DirectionOfTravelDiscretization}
 We approximate the continuum of directions that a particle can travel by assuming they only travel in discrete ordinate directions. Figure~\ref{fig:DiscreteOrdinates} shows an example of a set of discrete ordinates.
 
 \begin{figure}[!htb]
@@ -68,46 +76,113 @@ We approximate the continuum of directions that a particle can travel by assumin
 %
 \tdplotsetrotatedcoords{0}{270}{0}
 \tdplotsetrotatedcoordsorigin{(O)}
-\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0)}{1}{0}{90}{anchor=south west}{}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0)}{1}{0}{90}{anchor=west}{}
+
+% constant \xi
 \tdplotsetrotatedcoords{0}{0}{0}
 \tdplotsetrotatedcoordsorigin{(O)}
-\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.25)}{0.9}{0}{90}{anchor=south west}{}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.266)}{0.964}{0}{90}{anchor=east}{}
 \tdplotsetrotatedcoords{0}{0}{0}
 \tdplotsetrotatedcoordsorigin{(O)}
-\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.5)}{0.8}{0}{90}{anchor=south west}{}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.6815)}{0.7318}{0}{90}{anchor=west}{}
 \tdplotsetrotatedcoords{0}{0}{0}
 \tdplotsetrotatedcoordsorigin{(O)}
-\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.75)}{0.6}{0}{90}{anchor=south west}{}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.926)}{0.3775}{0}{90}{anchor=west}{}
+
+% constant \mu
+\tdplotsetrotatedcoords{0}{90}{90}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.266)}{0.964}{0}{90}{anchor=east}{}
+\tdplotsetrotatedcoords{0}{90}{90}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.6815)}{0.7318}{0}{90}{anchor=west}{}
+\tdplotsetrotatedcoords{0}{90}{90}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.926)}{0.3775}{0}{90}{anchor=west}{}
+
+% constant \eta
+\tdplotsetrotatedcoords{270}{270}{0}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.266)}{0.964}{0}{90}{anchor=east}{}
+\tdplotsetrotatedcoords{270}{270}{0}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.6815)}{0.7318}{0}{90}{anchor=west}{}
+\tdplotsetrotatedcoords{270}{270}{0}
+\tdplotsetrotatedcoordsorigin{(O)}
+\tdplotdrawarc[tdplot_rotated_coords,dashed]{(0,0,0.926)}{0.3775}{0}{90}{anchor=west}{}
+
+% discrete ordinate nodes
+\node[circle,draw,fill] at (0.2666,0.2666,0.92618){};
+\node[circle,draw,fill] at (0.2666,0.6815,0.6815){};
+\node[circle,draw,fill] at (0.2666,0.9262,0.2666){};
+\node[circle,draw,fill] at (0.6815,0.2666,0.6815){};
+\node[circle,draw,fill] at (0.6815,0.6815,0.2666){};
+\node[circle,draw,fill] at (0.9262,0.2666,0.2666){};
 
 \end{tikzpicture}
-\caption{Discrete ordinates.}
+\caption{The positive octant for $S_6$ level-symmetric angular quadrature.}
 \label{fig:DiscreteOrdinates}
 \end{figure}
 
-\noindent We utilize the discrete ordinate weights to approximate the integral in Equation~\ref{eq:RadTransport} by
+\noindent We utilize the discrete ordinate weights to approximate the integral in Equation~\ref{eq:ScalarFluxIntegral} by
 \begin{flalign}
 \phi & \approx \sum_m w_m \psi_m.
 \label{eq:SnWeightedSum}
 \end{flalign}
 
-There are several methods of spatial discretization that appear in the transport community. Among the most common are characteristic methods \cite{AdamsCharacteristicMethods}, finite difference methods \cite{Lewis_Comp_Methods_Neu_Trans}, finite volume methods, and finite element methods (FEMs) \cite{Lewis_Comp_Methods_Neu_Trans}. Typically, the problem domain is divided to a larger number of smaller domains. The equations are then numerically solved on each of these smaller regions where the solution is likely less varying when compared to the entire problem. The FEM was introduced to the transport community in the 1970's. The utility of this method was that it was more accurate than finite differencing methods~\cite{ReedTriangularMesh}. Since then, radiation transport research using the FEM has proliferated. In particular, the discontinuous FEM (DFEM) has been favored for it's ability to perform in the thick diffusion limit \cite{LarsenAsymptotic} (discussed in Sections \ref{sec:DiffLimitIntro} and \ref{sec:LiteratureReview}). Thus, this research uses the DFEM in which the solution is approximated to have a functional form within each mesh element. More discussion of various discretization methods can be found in Lewis and Miller \cite{Lewis_Comp_Methods_Neu_Trans}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Spatial Discretization}
+\label{subsec:SpatialDiscretization}
+There are several methods of spatial discretization that appear in the transport community. Among the most common are characteristic methods~\cite{AdamsCharacteristicMethods}, finite difference methods~\cite{Lewis_Comp_Methods_Neu_Trans}, finite volume methods, and the finite element methods (FEM)~\cite{Lewis_Comp_Methods_Neu_Trans}. Typically, the problem domain is divided to a larger number of smaller domains. The equations are then numerically solved on each of these smaller regions where the solution is likely less varying when compared to the entire problem. The FEM was introduced to the transport community in the 1970's. The utility of this method was that it was more accurate than finite differencing methods~\cite{ReedTriangularMesh}. Since then, radiation transport research using the FEM has proliferated. In particular, the discontinuous FEM (DFEM) has been favored for it's ability to perform in the thick diffusion limit~\cite{LarsenAsymptotic} (discussed in Sections \ref{sec:DiffLimitIntro} and \ref{sec:LiteratureReview}). Thus, this research uses the DFEM in which the solution is approximated to have a functional form within each mesh element. More discussion of various discretization methods can be found in Lewis and Miller~\cite{Lewis_Comp_Methods_Neu_Trans}.
 
 Additionally, these radiation transport problems are solved in each of Cartesian, cylindrical (\RZ), and spherical coordinates. The present research is concerned with Cartesian and \RZ\ geometries. Difficulties arise in \RZ\ geometry because of the introduction of angular derivatives. While a particle travels in a straight line in direction $\vec{\Omega}$, the cosines of the angles relative to the coordinate axes change as the $r$ and $z$ coordinates change.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{High Order Finite Elements}
+
+The finite element spatial discretization method (FEM) for the radiation transport equation has been continually investigated since the 1970s~\cite{ReedTriangularMesh, LasaintFEM}. Although FEMs require more computer memory than finite-difference methods, the linear discontinuous finite element method (LD) has been used because of its increased accuracy~\cite{LarsenAsymptotic} and continues to be used and researched~\cite{LarsenConvergenceRates, HamiltonNegativeFluxFixups, Adams_Disc_FEM_Thick_Diff}. Studying and implementing more accurate methods becomes increasingly possible as computational hardware performance increases. Computers can process and communicate quicker, and larger memory can store more variables. The FEM has since been used and shown to be accurate in production codes like Attila~\cite{WareingAttila}, a three-dimensional transport code. Trilinear DFEM (TLD), the three-dimensional analog to bilinear DFEM (BLD), was later adapted in Attila~\cite{AttilaUsersManual}. Other methods have been studied as well, such as the piece-wise linear DFEM (PWLD)~\cite{BaileyDFEMCylindrical}.
+
+Higher order DFEMs (polynomial orders $p \geq 2$) have become more popular as modern computer performance improves. Several authors~\cite{WangRagusaDSA, WangHODGTransport, WangDGFEMConvergence, WangDissertation} saw increased accuracy for up to 4$^\text{th}$-order finite elements. Woods et al.~\cite{WoodsHoDgfemXyCurved} saw increased accuracy for up to 8$^\text{th}$-order finite elements.
+
+Negative solutions can arise from oscillations of higher order finite element solutions near zero~\cite{WoodsThesis,WoodsHoDgfemXyCurved}. Authors have addressed negative scalar fluxes~\cite{HamiltonNegativeFluxFixups, Adams_Disc_FEM_Thick_Diff, MaginotNonNegative, MaginotLumpingDFEM, BrunnerPreservingPositivity}, with methods generally falling into two categories: ad hoc modification after calculating a solution, and modifying the equations beforehand to yield positive results.
+
+%Maginot et al.~\cite{MagniotHighOrderLumping} determined traditional mass-matrix lumping for one-dimensional high order methods do not increase in accuracy with an increase in finite element order. 
+
+% We are likely to be concerned with negative fluxes when integrating the linear transport equation with the material temperature equation. When appropriate, we will acknowledge the negative fluxes but retain them as part of the methodology~\cite{GreshoDontSuppressWiggles}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Meshes}
+
+There are a wide variety of meshes used with triangular and quadrilateral being the most common. Modeling curved boundaries with quadrilateral spatial meshes can be difficult without significant mesh refinement. Triangular meshes can be used in these cases and are often seen in literature~\cite{ReedTriangularMesh,WangHODGTransport,WangDGFEMConvergence, MorelLLDrz}. For example, in three-dimensions, Attila can discretize using unstructured tetrahedral meshes~\cite{WareingAttila}. The PWLD mesh refinement truncation error was first thought to behave as well on unstructured meshes as other methods using structured grids~\cite{StonePLFEM}.
+
+Recently, meshes with curved surfaces have been investigated using finite elements for radiation transport~\cite{WoodsHoDgfemXyCurved,WoodsThesis}. The motivation is to model curved boundaries witihin a problem without requiring additional mesh refinement. Woods et al.~\cite{WoodsHoDgfemXyCurved} performed a spatial convergence study using, meshes with curved surfaces and saw convergence rates of $(p+1)$, which is expected from Lasaint and Raviart~\cite{LasaintFEM} and Wang and Ragusa~\cite{WangHODGTransport}.
+
+% Get some fluid stuff in here (from Veselin) about them using curved surfaces so it warrants research in the radiation transport regime. THIS IS WHAT MAKES THIS RESEARCH RELEVANT, NEW, AND UNIQUE.
+
+Other fields have investigated the use of meshes with curved surfaces. Cheng~\cite{ChengCurvMeshEulerEqs} demonstrated that straight-edged meshes, compared to curved meshes, restricted the accuracy of the solution of the compressible Euler equations, alluding to the necessity of curved meshes for higher-order accuracy. Dobrev et al.~\cite{DobrevHOFEMHydro} saw increased accuracy using such meshes for Lagrangian hydrodynamics. They mapped the reference element to the physical element using the basis functions, which results in curved surfaces for $p>1$ elements. Subsequently, Dobrev et al.~\cite{DobrevHOAxisymmetric} demonstrated curved mesh use in axisymmetric geometries and noted that it more accurately modeled some features of the flow, among other improvements.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Diffusion Limit}
 \label{sec:DiffLimitIntro}
-
-High energy density physics (HEDP) problems are examples of scenarios where a particle has a very small mean free path (mfp) compared to the size of a spatial zone. This happens when the total macroscopic cross section $\sigma_t$ becomes very large, where the mfp is the inverse of the total cross section $\Lambda=\sigma_t^{-1}$. These problems are called ``optically thick''. Equation~\ref{eq:RadTransport} must behave well in the optically thick regime if we are to expect the same from the time and/or energy dependent radiation transport equation. The transport equation behaves well when the spatial mesh is optically thin. But we can assess the behavior of Equation \ref{eq:RadTransport} as the problem becomes increasingly optically thick by performing an asymptotic analysis. Specifically, if a small factor $\varepsilon$ is used to scale the physical processes of Equation \ref{eq:RadTransport},
+In high energy density physics (HEDP) problems, a particle can have a very small mean free path (mfp) compared to the size of a spatial zone. The mfp is the inverse of the total cross section $\Lambda=\sigma_t^{-1}$. Therefore, when the total macroscopic cross section $\sigma_t$ becomes very large, a span of length can be described as being many mfp's long. These problems are called ``optically thick''. The transport equation (Eq.~\ref{eq:RadTransport}) resolves optically thin length scales and we require the transport equation to resolve lengths in the optically thick regime. We can assess the behavior of Equation~\ref{eq:RadTransport} as the problem becomes increasingly optically thick by performing an asymptotic analysis. Specifically, if a small factor $\varepsilon$ is used to scale the physical processes of Equation~\ref{eq:RadTransport},
 \begin{flalign}
 \vec{\Omega}_m \vd \grad \psi_m + \frac{\sigma_t}{\varepsilon} \psi_m & = \frac{1}{4 \pi} \left(\frac{\sigma_t}{\varepsilon} - \varepsilon \sigma_a \right) \int_{4 \pi} \psi d \Omega^\prime + \varepsilon S_0
 \end{flalign}
+%
+\noindent where arguments have been dropped for brevity. Then, as $\varepsilon \rightarrow 0$ the mean free path $\Lambda = \varepsilon / \sigma_t \rightarrow 0$. In this limit, the problem is said to be optically thick and diffusive. It can be shown~\cite{LarsenAsymptoticSoln1,MalvagiAsymptoticAnalysis} that this scaled analytic transport equation limits to the analytic radiation diffusion equation to $O(\varepsilon^2)$. The radiation diffusion equation provides accurate solutions to optically thick and diffusive problems in the problem interior. Hence, concluding that the analytic transport equation limits to the analytic diffusion equation is physically meaningful. Optically thick and diffusive problems that may be typically solved with the radiation diffusion equation can also be solved using the radiation transport equation.
 
-\noindent where arguments have been dropped for brevity. Then, as $\varepsilon \rightarrow 0$ the mean free path $\Lambda = \varepsilon / \sigma_t \rightarrow 0$. In this limit, the problem is said to be optically thick and diffusive. It can be shown \cite{MalvagiAsymptoticAnalysis} that this scaled analytic transport equation limits to the analytic radiation diffusion equation to $O(\varepsilon^2)$. The radiation diffusion equation provides accurate solutions to optically thick and diffusive problems in the problem interior. Hence, concluding that the transport equation limits to the diffusion equation is physically meaningful. Optically thick and diffusive problems that are typically solved with the radiation diffusion equation can also be solved using the transport equation.
+The diffusion equation has substantially fewer degrees of freedom making it much quicker to solve numerically. This benefit is accompanied by some drawbacks. The diffusion equation cannot resolve optically thin problems nor solutions near highly absorbing regions, voids, nor strong material discontinuities~\cite{D&H}. However, the transport equation can resolve solutions in all of these regimes, including the diffusive regions. Hence, our present work employs the transport equation to solve problems that are optically thick and diffusive.
 
-The diffusion equation has substantially fewer degrees of freedom making it much quicker to solve numerically. This benefit is accompanied by some drawbacks. The diffusion equation cannot resolve optically thin problems nor problems with strong material discontinuities, including vacuum boundaries. Partly due to these drawbacks, our present work employs the transport equation to solve problems that are optically thick and diffusive.
+The diffusion limit analysis has been applied to spatially discretized transport problems. The LD and lumped LD (LLD) methods were shown to have the diffusion limit in one-dimension by Larsen and Morel~\cite{LarsenAsymptotic} and Larsen~\cite{LarsenAsymptoticDiffusionLimit}, respectively, which is one of the reasons for their continued popularity in literature. In multiple dimensions, the LD method generally fails in the diffusion limit~\cite{BorgersAsymptoticDiffLimit}, but the LLD~\cite{MorelLLDrz, MorelLLDTetrahedral}, BLD~\cite{Adams_Disc_FEM_Thick_Diff}, and fully lumped BLD (FLBLD)~\cite{AdamsDFEMDiffLimit} methods possess the diffusion limit. Lumping the BLD equations in curvilinear geometry has been demonstrated to possess the diffusion limit as well~\cite{PalmerCurvilinearTransport, MorelLBLD}. Attila has been demonstrated to solve problems in the diffusion limit using tri-linear DFEM, despite having the potential for negative fluxes~\cite{AttilaUsersManual}.
 
-The source iteration (SI) method \cite{Lewis_Comp_Methods_Neu_Trans} is commonly employed to solve the discretized transport equation. The algorithm
+The PWLD has also been popular for its performance in the diffusion limit. Stone and Adams~\cite{StonePLFEM} concluded the PWLD should behave as well as BLD but on unstructured meshes. Bailey et al.~\cite{BaileyDFEMCylindrical, BaileyDissertation} corroborated this and extended the PWLD method to RZ geometry and concluded this method has the diffusion limit. Bailey et al.~\cite{BaileyBLDFEM} then introduced piece-wise BLD (PWBLD), which allows for more curvature in a solution and has properties favorable to having the diffusion limit, although they do not perform the asymptotic analysis to be conclusive.
+
+Woods et al.~\cite{WoodsHoDgfemXyCurved} numerically demonstrate that two-dimensional Cartesian high order finite elements trend toward the diffusion limit despite not being conclusive about possessing the diffusion limit. Their study was performed without a source iteration acceleration technique so they were unable to perform calculations for optically thick media. This was performed on a quadrilateral mesh with curved surfaces. Their results indicated their method may converge toward the diffusion limit at $O(\varepsilon)$ rather than $O(\varepsilon^2)$, which was suggested may occur due to the inclusion of curved surfaces~\cite{Adams_Disc_FEM_Thick_Diff}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Source Iteration Acceleration}
+The source iteration (SI) method~\cite{Lewis_Comp_Methods_Neu_Trans} is commonly employed to solve the discretized transport equation. The algorithm
 \begin{subequations}
 \begin{flalign}
 \vec{\Omega} \vd \grad \psi^{(\ell+1/2)} + \sigma_t \psi^{(\ell+1/2)} & = \frac{1}{4 \pi} \sigma_s \phi^{(\ell)} + S_0 \\
@@ -119,88 +194,43 @@ The source iteration (SI) method \cite{Lewis_Comp_Methods_Neu_Trans} is commonly
 
 \noindent describes the calculation of the angular flux using the lagged scalar flux followed by an update to the scalar flux using Equation~\ref{eq:SnWeightedSum}.
 
-The transport equation can converge arbitrarily slowly in these optically thick regimes \cite{LarsenStableDSATheory}. To speed up the SI, one option is to refine the mesh until the optical thickness of a typical mesh cell is on the order of a mean-free-path to, effectively, solve an optically thin problem in each mesh zone. This option is not very efficient because it can introduce a large number of degrees of freedom to the problem, thereby increasing the solution time. Alternatively, acceleration techniques can be applied to the SI to compensate for slow convergence. Diffusion synthetic acceleration is commonly used to accelerate the source iteration and is discussed in more detail below.
+The transport equation can converge arbitrarily slowly in highly scattering problems~\cite{LarsenStableDSATheory}. If computational efficiency is important, one option would be to solve the problem using the diffusion equation instead of the transport equation. The radiation diffusion equation can resolve these problems well and it does not require the source iteration method. However, the diffusion equation cannot resolve the solution in highly absorbing regions nor at material discontinuities including vacuum boundaries~\cite{D&H}.
+
+We want to preserve the transport solution to these problems so we opt to speed up the SI. One option is to refine the mesh until the optical thickness of a typical mesh cell is on the order of a mean-free-path to, effectively, solve an optically thin problem in each mesh zone. This option is not very efficient because it can introduce a large number of degrees of freedom to the problem, thereby increasing the solution time. Alternatively, acceleration techniques can be applied to the SI to compensate for slow convergence. Diffusion synthetic acceleration (DSA) is commonly used to accelerate the source iteration and is discussed in more detail below.
+
+Several source iteration acceleration schemes have been developed. The Wareing-Larsen-Adams (WLA) method~\cite{WareingDSADFEM}, accelerates the source iterations but its effectiveness was found to degrade as cells become optically thick~\cite{WarsaFullyConsistentLDDSA}. Another alternative, the modified four-step (M4S)~\cite{AdamsFastIterativeMethods}, is effective in 1-D but is conditionally stable in 2-D for unstructured meshes. Diffusion synthetic acceleration (DSA) is a very common method. Using DSA, Larsen~\cite{LarsenStableDSATheory} and Larsen and McCoy~\cite{LarsenStableDSANumericalResults} showed that one-dimensional LD is unconditionally accelerated. Wareing et al.~\cite{WareingDSADFEM} and Adams and Martin~\cite{AdamsDSADFEM} extended unconditionally accelerating DSA to two-dimensions.
+
+Recently, Wang and Ragusa~\cite{WangRagusaDSA} developed the modified interior penalty (MIP) form for the DSA equations. Considered a partially consistent scheme, it was developed from the interior penalty form of a discretized diffusion equation and was originally applied to high-order DFEM \SN\ transport on triangular meshes. It has since been used with PWLD on arbitrary polygon meshes~\cite{TurcksinDiscontinuousDSA} and later with BLD~\cite{TurcksinDSABLD}. The MIP DSA equations were derived with Dirichlet boundary conditions according to Kanschat~\cite{KanschatDGViscousIncompressFlow} for incompressible flow.
+
+The DSA implementation originally utilized Robin (Marshak, zero incident current, vacuum) boundary conditions~\cite{AdamsDSADFEM, WarsaFullyConsistentLDDSA}, whereas the MIP DSA equations, as developed, employed homogeneous Dirichlet boundary conditions. It has been acknowledged that homogeneous Dirichlet boundary conditions may degrade performance~\cite{WangDissertation}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\RZ\ Geometry}
+The radiation transport equation has been solved in \RZ\ geometry for many years. One particular difficulty with cylindrical coordinates is that an angular derivative is present within the streaming term. Hence, the spatial discretization is inherently dependent upon the direction of travel discretization. Despite a particle traveling in a straight line, the coordinate system describing that direction changes with position. The common method, described in Section~\ref{sec:Methodology}, is to perform an angular differencing that requires a ``starting direction'' equation, closing the system of equations with a weighted diamond difference scheme.
+
+Palmer and Adams~\cite{PalmerCurvilinearTransport} and Palmer~\cite{PalmerDissertation} solved the \RZ\ \SN\ equations using BLD, MLBLD, SLBLD, FLBLD, and SCB methods but found that only the FLBLD and SCB methods are accurate in the thick diffusion limit, as predicted by their asymptotic diffusion limit analysis. They determined that the support points must be sufficiently ``local'' to achieve a reasonable discretization of the diffusion equation.
+
+Bailey et al.~\cite{BaileyDFEMCylindrical} derived the PWLD transport equation for \RZ\ geometry on arbitrary polygonal meshes and showed that their method is accurate in the diffusion limit. Bailey~\cite{BaileyDissertation} performed an asymptotic diffusion limit analysis for PWLD in \RZ\ geometry on an arbitrary polygonal mesh and found the leading order angular flux is isotropic. The PWLD scheme also displayed $O(h^2)$ convergence rates in several test problems, as expected.
+
+Morel et al.~\cite{MorelLLDrz} performed an asymptotic diffusion limit analysis for the LLD method in \RZ\ geometry on a triangular mesh. The LLD equations satisfy a LLC diffusion discretization to leading order on the mesh interior. They also numerically demonstrate a $O(h^2)$ spatial convergence in the thick diffusion limit.
+
+Efforts to maintain positivity on non-orthogonal meshes in \RZ\ geometry have been successful. Morel et al.~\cite{MorelLBLD} derived a lumped BLD scheme for quadrilaterals that ``is conserative, preserves the constant solution, preserves the thick diffusion limit, behaves well with unresolved boundary layers, and gives second-order accuracy in both the transport and thick diffusion-limit regimes.''
+
+At this time, no application of high order finite elements in \RZ\ geometry on meshes with curved surfaces has been observed.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Axisymmetry}
+It can be convenient to solve a spherical problem using \RZ\ geometry. Specifically because the streaming term of the radiation transport equation is more complicated in spherical coordinates than in cylindrical. Thus, the discretization methodology need not be as complicated. Despite the convenience of describing a physical position within a sphere using spherical coordinates, the spatial discretizaiton methodology becomes much more complicated. The increased complexity is analogous to the increased complexity of using \RZ\ geometry from Cartesian coordinates.
+
+It can be simpler to solve a spherical problem using \RZ\ geometry. The question of whether or not this can be modeled accurately naturally arises. Two ways of considering how well the \RZ\ discretized system can model a spherical system are using the method of manufactured solutions (MMS)~\cite{Lingus} with a manufactured solution in spherical geometry, and considering the spherical symmetry preservation from an \RZ\ geometry discretization. We consider both methods in this dissertation.
+
+There has been relatively little research in this vein. In hydrodynamics, Dobrev et al.~\cite{DobrevHOAxisymmetric} demonstrated this spherical symmetry preservation. In radiation diffusion, Brunner et al.~\cite{BrunnerSphericalsymmetry} demonstrated conditional spherical symmetry preservation. To date, we are only aware of one published paper discussing the ability of the \RZ\ transport equation to preserve 1-D spherical symmetry. Chaland and Samba~\cite{Chaland2016SphericalSymmetry} qualitatively demonstrated spherical symmetry preservation in a void with an initial condition of scalar flux in the center of the ``sphere''. They demonstrated that ray-effects are created from the \SN\ transport equations, whereas they present an alternative angular discretization that qualitatively preserves the 1-D spherical symmetry in a void.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Outline}
 \label{sec:OutlineIntro}
 
-The remainder of this thesis is outlined as follows. 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Literature Review}
-\label{sec:LiteratureReview}
-
-This section is a review of past research in thermal radiation transport (TRT). The topics include the discretization of the radiation transport equation (RTE), diffusion synthetic acceleration (DSA), and methods for TRT. The RTE (Eq. \ref{eq:RTE}) is integral to all of the methods discussed in this proposal so we review related literature first.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Radiation Transport}
-
-Deterministic radiation transport methods require discretizations of the continua of the phase space it encompasses, i.e. in time, direction of travel, energy, and space. Ideally, we would model the continuous phase space because it is realistic. However, we cannot account for an infinite number of variables but would like our discrete approximations to accurately resemble the analytic solution. In general, the cost of higher accuracy is increased computational time.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{High Order Finite Elements}
-
-The finite element spatial discretization method (FEM) for the RTE has been continually investigated since the 1970s \cite{ReedTriangularMesh, LasaintFEM}. Although FEMs require more computer memory than finite-difference methods, the linear discontinuous finite element method (LD) has been used because of its increased accuracy \cite{LarsenAsymptotic} and continues to be used and researched \cite{LarsenConvergenceRates, HamiltonNegativeFluxFixups, Adams_Disc_FEM_Thick_Diff}. Studying and implementing more accurate methods becomes increasingly possible as computational hardware performance increases. Computers can process and communicate quicker, and larger memory can store more variables. The FEM has since been used and shown to be accurate in production codes like Attila \cite{WareingAttila}, a three-dimensional transport code. Trilinear DFEM (TLD), the three-dimensional analog to bilinear DFEM (BLD), was later adapted in Attila \cite{AttilaUsersManual}. Other methods have been studied as well, such as the piece-wise linear DFEM (PWLD) \cite{BaileyDFEMCylindrical}.
-
-Higher order DFEMs (polynomial orders $p \geq 2$) have become more popular as modern computer performance improves. Several authors \cite{WangRagusaDSA, WangHODGTransport, WangDGFEMConvergence, WangDissertation} saw increased accuracy for up to 4$^\text{th}$-order finite elements. Woods et al. \cite{WoodsHoDgfemXyCurved} saw increased accuracy for up to 8$^\text{th}$-order finite elements.
-
-Negative intensities can arise from oscillations of higher order finite element solutions near zero. Negative fluxes can cause the equations of state to calculate negative temperatures, densities, and pressures, which are unphysical. Authors have addressed negative intensities \cite{HamiltonNegativeFluxFixups, Adams_Disc_FEM_Thick_Diff, MaginotNonNegative, MaginotLumpingDFEM, BrunnerPreservingPositivity}, with methods generally falling into two categories: ad hoc modification after calculating a solution, and modifying the equations beforehand to yield positive results.
-
-%Maginot et al. \cite{MagniotHighOrderLumping} determined traditional mass-matrix lumping for one-dimensional high order methods do not increase in accuracy with an increase in finite element order. 
-
-% We are likely to be concerned with negative fluxes when integrating the linear transport equation with the material temperature equation. When appropriate, we will acknowledge the negative fluxes but retain them as part of the methodology \cite{GreshoDontSuppressWiggles}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Meshes}
-
-There are a wide variety of meshes used with triangular and quadrilateral being the most common. Modeling curved boundaries with quadrilateral spatial meshes can be difficult without significant mesh refinement. Triangular meshes can be used in these cases and are often seen in literature \cite{ReedTriangularMesh, WangHODGTransport, WangDGFEMConvergence, MorelLLDrz}. For example, in 3-dimensions, Attila can discretize using unstructured tetrahedral meshes \cite{WareingAttila}. The PWLD mesh refinement truncation error was first thought to behave as well on unstructured meshes as other methods using structured grids \cite{StonePLFEM}.
-
-Recently, meshes with curved surfaces have been investigated using finite elements for radiation transport \cite{WoodsHoDgfemXyCurved, WoodsThesis}. The motivation is to model curved boundaries witihin a problem without requiring additional mesh refinement. Woods et al. \cite{WoodsHoDgfemXyCurved} performed a spatial convergence study using, meshes with curved surfaces and saw convergence rates of nearly $(p+1)$, which is similar to findings by Lasaint and Raviart \cite{LasaintFEM} and Wang and Ragusa \cite{WangHODGTransport}.
-
-% Get some fluid stuff in here (from Veselin) about them using curved surfaces so it warrants research in the radiation transport regime. THIS IS WHAT MAKES THIS RESEARCH RELEVANT, NEW, AND UNIQUE.
-
-Other fields have investigated the use of meshes with curved surfaces. Cheng \cite{ChengCurvMeshEulerEqs} demonstrated that straight-edged meshes, compared to curved meshes, restricted the accuracy of the olution of the compressible Euler equations, alluding to the necessity of curved meshes for higher-order accuracy. Dobrev et al. \cite{DobrevHOFEMHydro} saw increased accuracy using such meshes for Lagrangian hydrodynamics. They mapped the reference element to the physical element using the basis functions, which results in curved surfaces for $p>1$ elements. Subsequently, Dobrev et al. \cite{DobrevHOAxisymmetric} demonstrated curved mesh use in axisymmetric geometries and noted that it more accurately modeled some features of the flow, among other improvements.
-
-%We intend to extend the analysis into the diffusion limit.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Diffusion Limit}
-
-High energy density physics (HEDP) problems are, at least in part, optically thick and diffusive. To assess the behavior of the analytic transport equation in the diffusion limit, Larsen et al. \cite{LarsenAsymptoticSoln1} performed an asymptotic analysis and determined that the analytic transport equation can be solved in the diffusion limit. That is, the analytic transport equation can be used in diffusive regimes. Problems with thicknesses on the order of a diffusion length are typically solved with the diffusion equation, which does not perform well near optically thin regions, highly absorbing regions, or problem boundaries \cite{D&H}. However, the transport equation can be used in all of these regimes, including diffusive regions.
-
-The diffusion limit analysis has been applied to spatially discretized transport problems. The LD and lumped LD (LLD) methods were shown to have the diffusion limit in one-dimension by Larsen and Morel \cite{LarsenAsymptotic} and Larsen \cite{LarsenAsymptoticDiffusionLimit}, respectively, which is one of the reasons for their continued popularity in literature. In multiple dimensions, the LD method generally fails in the diffusion limit \cite{BorgersAsymptoticDiffLimit}, but the LLD \cite{MorelLLDrz, MorelLLDTetrahedral}, BLD \cite{Adams_Disc_FEM_Thick_Diff}, and fully lumped BLD (FLBLD) \cite{AdamsDFEMDiffLimit} methods possess the diffusion limit. Lumping the BLD equations in curvilinear geometry has been demonstrated to possess the diffusion limit as well \cite{PalmerCurvilinearTransport, MorelLBLD}. Attila has been demonstrated to solve problems in the diffusion limit using tri-linear DFEM, despite having the potential for negative fluxes \cite{AttilaUsersManual}.
-
-The PWLD has also been popular for its performance in the diffusion limit. Stone and Adams \cite{StonePLFEM} concluded the PWLD should behave as well as BLD but on unstructured meshes. Bailey et al. \cite{BaileyDFEMCylindrical, BaileyDissertation} corroborated this and extended the PWLD method to RZ geometry and concluded this method has the diffusion limit. Bailey et al. \cite{BaileyBLDFEM} then introduced piece-wise BLD (PWBLD), which allows for more curvature in a solution and has properties favorable to having the diffusion limit, although they do not perform the asymptotic analysis to be conclusive.
-
-Woods et al. \cite{WoodsHoDgfemXyCurved} numerically demonstrate that two-dimensional Cartesian high order finite elements trend toward the diffusion limit despite not being conclusive about possessing the diffusion limit. Their study was performed without a source iteration acceleration technique so they were unable to perform calculations for optically thick media. This was performed on a quadrilateral mesh with curved surfaces. Their results indicated their method may converge toward the diffusion limit at $O(\varepsilon)$ rather than $O(\varepsilon^2)$, which was suggested may occur due to the inclusion of curved surfaces \cite{Adams_Disc_FEM_Thick_Diff}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Source Iteration Acceleration}
-
-The source iteration method (Eqs. \ref{eqs:SourceIteration}) can be slow to converge in optically thick problems so an acceleration method is typical. Diffusion synthetic acceleration (DSA) is a very common method. Using DSA, Larsen \cite{LarsenStableDSATheory} and Larsen and McCoy \cite{LarsenStableDSANumericalResults} showed that one-dimensional LD is unconditionally accelerated. Wareing et al. \cite{WareingDSADFEM} and Adams and Martin \cite{AdamsDSADFEM} extended unconditionally accelerating DSA to two-dimensions.
-
-An alternative method, commonly referred to as the Wareing-Larsen-Adams (WLA) method \cite{WareingDSADFEM}, accelerates the source iterations but its effectiveness was found to degrade as cells become optically thick \cite{WarsaFullyConsistentLDDSA}. Another alternative, the modified four-step (M4S) \cite{AdamsFastIterativeMethods}, is effective in 1-D but is conditionally stable in 2-D for unstructured meshes.
-
-Recently, Wang and Ragusa \cite{WangRagusaDSA} developed the modified interior penalty (MIP) form for the DSA equations. Considered a partially consistent scheme, it was developed from the interior penalty form of a discretized diffusion equation and was originally applied to high-order DFEM \SN\ transport on triangular meshes. It has since been used with PWLD on arbitrary polygon meshes \cite{TurcksinDiscontinuousDSA} and later with BLD \cite{TurcksinDSABLD}. The MIP DSA equations were derived with Dirichlet boundary conditions according to Kanschat \cite{KanschatDGViscousIncompressFlow} for incompressible flow.
-
-Other DSA implementations implement Robin boundary conditions \cite{AdamsDSADFEM, WarsaFullyConsistentLDDSA}, whereas the MIP DSA equations utilize homogeneous Dirichlet boundary conditions. It has been acknowledged that homogeneous Dirichlet boundary conditions may degrade performance \cite{WangDissertation}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{\RZ\ Geometry}
-
-The RTE has been solved in \RZ\ geometry for many years. The difficulty with cylindrical (and spherical) coordinates arises in the angular derivative. Despite a particle traveling in a straight line, the coordinate system describing that direction changes with position. The common method, described in Section \ref{sec:Methodology}, is to perform an angular differencing that requires a ``starting direction'' equation, closing the system of equations with a weighted diamond difference scheme.
-
-Palmer and Adams \cite{PalmerCurvilinearTransport} and Palmer \cite{PalmerDissertation} solved the \RZ\ \SN\ equations using BLD, MLBLD, SLBLD, FLBLD, and SCB methods but found that only the FLBLD and SCB methods are accurate in the thick diffusion limit, as predicted by their asymptotic diffusion limit analysis. They determined that the support points must be sufficiently ``local'' to achieve a reasonable discretization of the diffusion equation.
-
-Bailey et al. \cite{BaileyDFEMCylindrical} derived the PWLD transport equation for \RZ\ geometry on arbitrary polygonal meshes and showed that their method is accurate in the diffusion limit. Bailey \cite{BaileyDissertation} performed an asymptotic diffusion limit analysis for PWLD in \RZ\ geometry on an arbitrary polygonal mesh and found the leading order angular flux is isotropic. The PWLD scheme also displayed $O(h^2)$ convergence rates in several test problems, as expected.
-
-Morel et al. \cite{MorelLLDrz} performed an asymptotic diffusion limit analysis for the LLD method in \RZ\ geometry on a triangular mesh. The LLD equations satisfy a LLC diffusion discretization to leading order on the mesh interior. They also numerically demonstrate a $O(h^2)$ spatial convergence in the thick diffusion limit.
-
-Efforts to maintain positivity on non-orthogonal meshes in \RZ\ geometry have been successful. Morel et al. \cite{MorelLBLD} derived a lumped BLD scheme for quadrilaterals that ``is conserative, preserves the constant solution, preserves the thick diffusion limit, behaves well with unresolved boundary layers, and gives second-order accuracy in both the transport and thick diffusion-limit regimes.''
-
-At this time, no application of high order finite elements in \RZ\ geometry on meshes with curved surfaces has been observed.
+The remainder of this dissertation is outlined as follows. We discuss the finite element method in Section~\ref{sec:HODFEM}, including high-order basis functions. In Section~\ref{sec:HOMeshes}, we discuss the meshes with curved surfaces and their transformations. Section~\ref{sec:DSA} discusses the DSA method, our modifications, and results we obtained. Finally, Section~\ref{sec:RZ} discusses the \RZ\ discretization scheme, solution methodology, and results using our methodology.
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}

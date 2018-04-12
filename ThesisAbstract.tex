@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+\begin{singlespace}
+
+\begin{center}
+AN ABSTRACT OF THE DISSERTATION OF
+\end{center}
+
+\vspace{12pt}
+
+\noindent
+\uline{\ThesisAuthor} for the degree of \uline{Doctor of Philosophy} in \uline{Nuclear Engineering} presented on \uline{\DefenseDate}
+
+\vspace{12pt}
+
+\noindent
+Title: \uline{\ThesisTitle}
+
+\vspace{12pt}
+
+\noindent
+Abstract approved:
+
+\vspace{12pt}
+
+\noindent
+\begin{center}
+\rule{\textwidth}{0.4pt}
+
+\noindent
+Todd S. Palmer
+\end{center}
+
+\vspace{12pt}
+
+\end{singlespace}
+
+{\color{red}
+The high-order finite element \SN transport equations are solved on several test problems to investigate the behavior of the discretization method on meshes with curved edges in X-Y geometry. Simpler problems ensured the correct implementation of MFEM, the general finite element library employed. A convergence study using the method of manufactured solutions demonstrates the convergence rate as a function of number of unknowns for meshes whose sides are described by polynomial curves of increasing order. Optically thick and diffusive problems indicate the DGFEM transport solution trends toward a numerical solution of the diffusion equation, though a rigorous diffusion limit analysis has not yet been performed. A direct solve approach to computing the angular flux unknowns simultaneously is presented as an alternative to source iteration that involves linear algebraically inverting the ``streaming plus collision minus scattering'' operator. These results serve as a proof-of-concept of this spatial discretization method.
+}
+
+\end{document}

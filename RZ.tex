@@ -9,7 +9,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\RZ\ Geometry}
 \label{sec:RZ}
-
 Solving the transport equation in different coordinate systems may provide simpler ways of modeling a particular geometry or symmetry. In this section, we derive the \RZ\ transport equation to be solved. It assumes there is no variation in the azimuthal direction (of a cylinder), hence problems in \RZ\ geometry look very similar to problems in \XY\ geometry. The streaming operator in cylindrical geometry is \cite{Lewis_Comp_Methods_Neu_Trans}
 \begin{flalign}
 \vec{\Omega} \vd \grad \psi & = \frac{\mu}{r} \frac{\partial}{\partial r} (r \psi) + \frac{\eta}{r} \frac{\partial \psi}{\partial \zeta} + \xi \frac{\partial \psi}{\partial z} - \frac{1}{r} \frac{\partial}{\partial \omega} (\eta \psi),
@@ -535,25 +534,36 @@ We use MMS to solve a 1-D spherical problem using the \RZ\ geometry spatial disc
 \psi_\text{MMS} (\rho) & = \sin(\pi \rho) + 2 -\rho,
 \end{flalign}
 %
-\noindent where $\rho = \sqrt{r^2 + z^2}$ is the distance from the origin (i.e. the spherical radius). Plugging this into the \RZ\ transport equation,
+\noindent where $\rho = \sqrt{r^2 + z^2}$ is the distance from the origin (i.e. the spherical radius). First, we integrate the streaming term by parts,
+\begin{flalign}
+\vec{\Omega} \vd \grad \psi & = \mu \frac{\partial \psi}{\partial r} + \frac{\mu}{r} \psi + \xi \frac{\partial \psi}{\partial r} - \frac{\mu}{r} \psi - \frac{\eta}{r} \frac{\partial \psi}{\partial \omega} \\
+& = \mu \frac{\partial \psi}{\partial r} + \xi \frac{\partial \psi}{\partial z} - \frac{\eta}{r} \frac{\partial \psi}{\partial \omega}
+\end{flalign}
+
+\noindent Substituting the manufactured solution into this \RZ\ transport equation,
 \begin{multline}
-\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
-- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+\mu \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{\eta}{r} \frac{\partial}{\partial \omega} \left[\left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
 = \frac{1}{2 \pi} \sigma_s \phi_\text{MMS} + \frac{1}{2 \pi} S_0.
 \end{multline}
 %
 \noindent Integrating $\psi_\text{MMS}$ over all directions reveals $\phi_\text{MMS}$,
 \begin{multline}
-\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
-- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+\mu \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{\eta}{r} \frac{\partial}{\partial \omega} \left[\left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
 = \sigma_s \left(\sin (\pi \rho)+2-\rho \right) + \frac{1}{2 \pi} S_0.
 \end{multline}
 %
 \noindent We perform some simplifications,
+\begin{flalign}
+\frac{\partial \psi}{\partial r} & = \frac{\pi r \cos(\pi \sqrt{r^2+z^2})}{\sqrt{r^2+z^2}} - \frac{r}{\sqrt{r^2+z^2}} \\
+\frac{\partial \psi}{\partial z} & = \frac{\pi z \cos(\pi \sqrt{r^2+z^2})}{\sqrt{r^2+z^2}} - \frac{r}{\sqrt{r^2+z^2}}
+\end{flalign}
+
 {\color{blue}
 \begin{multline}
-\frac{\mu}{r} \frac{\partial}{\partial r} \left[r \left(\sin (\pi \rho)+2-\rho \right) \right] + \frac{\eta}{r} \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
-- \frac{1}{r} \frac{\partial}{\partial \omega} \left[\eta \left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
+\mu \frac{\partial}{\partial r} \left(\sin (\pi \rho)+2-\rho \right) + \xi \frac{\partial}{\partial z} \left(\sin (\pi \rho)+2-\rho \right) \\
+- \frac{\eta}{r} \frac{\partial}{\partial \omega} \left[\left(\sin (\pi \rho)+2-\rho \right) \right] + \sigma_t \left(\sin (\pi \rho)+2-\rho \right) \\
 = \sigma_s \left(\sin (\pi \rho)+2-\rho \right) + \frac{1}{2 \pi} S_0.
 \end{multline}
 }
@@ -571,6 +581,358 @@ We evaluate the relative asymmetry by calculating the averages of all nodes at e
 \end{flalign}
 %
 \noindent is the average scalar flux at all nodes at the same spherical radius $\rho$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Linear in Spherical Radius}
+\label{subsec:LinearSphericalRadius}
+The three traditional coordinate systems are Cartesian, cylindrical, and spherical. It is straight forward to describe a spatial position using any one of them. However, challenges arise when spatially discretizing. Specifically, angular derivatives arise inside the streaming term in cylindrical and spherical geometries. In modeling a spherical problem, it would seem best to use a spherical coordinate system to describe the spatial domain. However, there are two angular derivatives that must now be handled with a numerical scheme. Cylindrical geometry may be used in lieu of spherical coordinates to describe a spherical problem. In this section, we demonstrate the use of \RZ\ geometry to preserve a 1-D spherical solution.
+
+We use the MMS with
+\begin{flalign}
+\psi_\text{MMS}(r,z) & = \rho = \sqrt{r^2+z^2}.
+\label{eq:RZMMSLinearRho}
+\end{flalign}
+%
+This solution is linear in the 1-D spherical coordinate $\rho$. We solve this for $p=\{1,2,4\}$, using $S_N$ level symmetric angular quadrature with $N=\{4,6,8,10,12\}$, on a $1^\text{st}$- and $2^\text{nd}$-order mesh. The problem has physical parameters $\sigma_t=5.0$ and $\sigma_a=2.0$. Figures~\ref{fig:RZASMMSLinearRhoBrunnerp1g1}~-~\ref{fig:RZASMMSLinearRhoBrunnerp4g1} show each finite element order $p$ for select angular quadrature solutions.
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S4g1}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S6g1}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g1}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S10g1}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S12g1}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $1^\text{st}$-order finite elements on a $1^\text{st}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp1g1}
+\end{sidewaysfigure}
+
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S4g1}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S6g1}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S8g1}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S10g1}
+%\caption{$S_10$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S12g1}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $2^\text{st}$-order finite elements on a $1^\text{st}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp2g1}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S4g1}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g1}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g1}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g1}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S12g1}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $4^\text{st}$-order finite elements on a $1^\text{st}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp4g1}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p8S4g1}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p8S6g1}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p8S8g1}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p8S10g1}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p8S10g1}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $8^\text{st}$-order finite elements on a $1^\text{st}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp8g1}
+\end{sidewaysfigure}
+
+We see from Figures~\ref{fig:RZASMMSLinearRhoBrunnerp1g1}~-~\ref{fig:RZASMMSLinearRhoBrunnerp4g1} that increasing the angular quadrature order does qualitatively reduce the general asymmetry of the solution. Increasing the finite element order, however, reduces the asymmetry significantly more. Figure~\ref{fig:RZASMMSLinearRhoBrunnerg1CompareP} compares $p=\{1,2,4\}$ for $S_8$ level-symmetric angular quadrature. We notice that the solution around $\rho=0$ persistently has the largest asymmetries. We note that this mesh is made up entirely of quadrilaterals, even the inner-most radial zones.
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g1CompareP}
+\caption{$p=1$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g1}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S8g1CompareP}
+\caption{$p=2$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g1}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g1CompareP}
+\caption{$p=4$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=\{1,2,4\}$ finite elements on a $1^\text{st}$-order mesh for $S_8$ level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerg1CompareP}
+\end{sidewaysfigure}
+
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S4g2}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S12g2}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $1^\text{st}$-order finite elements on a $2^\text{nd}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp1g2}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S4g2}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S8g2}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S12g2}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $2^\text{nd}$-order finite elements on a $2^\text{nd}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp2g2}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S4g2}
+\caption{$S_4$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2}
+\caption{$S_8$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S12g2}
+\caption{$S_{12}$.}
+\end{subfigure}
+\caption{Relative asymmetry for $4^\text{th}$-order finite elements on a $2^\text{nd}$-order mesh for given order of level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp4g2}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2CompareP}
+\caption{$p=1$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p2S8g2CompareP}
+\caption{$p=2$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2CompareP}
+\caption{$p=4$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=\{1,2,4\}$ finite elements on a $2^\text{nd}$-order mesh for $S_8$ level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerg2CompareP}
+\end{sidewaysfigure}
+
+Although the manufactured solution (Eq.~\ref{eq:RZMMSLinearRho}) is not overly complicated, a steep gradient appears in the MMS source term near $(r,z)=(0,0)$. We look at each term of the transport equation using the manufactured solution in Figure~\ref{fig:RZMMSLinearRhoAnalytic}. The shape of the source term $S_0/(2 \pi)$ is complicated near the origin. In practice, the source term is approximated by the finite element shape function using the analytic values for the nodes. So although the source is exact at the node points, the shape function does not capture the analytic shape of the source term necessary to achieve the axisymmetry we desire.
+
+\begin{figure}
+\includegraphics[scale=0.5]{../../Research/graphics/Axisymmetry/RZASMMSLinearRho/TransportTerms}
+\caption{Analytic representation of each term of the transport equation using the manufactured solution, Equation~\ref{eq:RZMMSLinearRho}, for $(\mu,\xi)=(0.21821789023599239,0.95118973121134187)$. The complicated shapes of the streaming and source terms are typical of the other $\vec{\Omega}$ directions.}
+\label{fig:RZMMSLinearRhoAnalytic}
+\end{figure}
+
+We also investigated the symmetry preservation my performing sequential mesh refinements for $p=1$. Figures~\ref{fig:RZASMMSLinearRhoBrunnerp1S8g2Part1} and~\ref{fig:RZASMMSLinearRhoBrunnerp1S8g2Part2} show the first several mesh refinement steps. By considering the general color trend of the sequence, the symmetry preservation is generally better with increased mesh refinement.
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r0}
+\caption{$N_\text{zones}=6$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r1}
+\caption{$N_\text{zones}=28$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r2}
+\caption{$N_\text{zones}=120$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=1$ finite elements on a $2^\text{nd}$-order mesh for $S_8$ level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp1S8g2Part1}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r3}
+\caption{$N_\text{zones}=496$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S6g2}
+%\caption{$S_6$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r4}
+\caption{$N_\text{zones}=2016$.}
+\end{subfigure}%
+%\begin{subfigure}{0.2\textwidth}
+%\includegraphics[scale=0.25,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S10g2}
+%\caption{$S_{10}$.}
+%\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p1S8g2r5}
+\caption{$N_\text{zones}=8128$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=1$ finite elements on a $2^\text{nd}$-order mesh for $S_8$ level-symmetric angular quadrature; mesh overlay may be removed for clarity.}
+\label{fig:RZASMMSLinearRhoBrunnerp1S8g2Part2}
+\end{sidewaysfigure}
+
+We also investigated the symmetry preservation my performing sequential mesh refinements for $p=4$. Figures~\ref{fig:RZASMMSLinearRhoBrunnerp4S8g2Part1} and~\ref{fig:RZASMMSLinearRhoBrunnerp4S8g2Part2} show the first several mesh refinement steps. By considering the general color trend of the sequence, the symmetry preservation is generally better with increased mesh refinement.
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r0}
+\caption{$N_\text{zones}=6$.}
+\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r1}
+\caption{$N_\text{zones}=28$.}
+\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r2}
+\caption{$N_\text{zones}=120$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=4$ finite elements on a $2^\text{nd}$-order mesh for $S_8$ level-symmetric angular quadrature.}
+\label{fig:RZASMMSLinearRhoBrunnerp4S8g2Part1}
+\end{sidewaysfigure}
+
+\begin{sidewaysfigure}[!htb]
+\centering
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r3}
+\caption{$N_\text{zones}=496$.}
+\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r4}
+\caption{$N_\text{zones}=2016$.}
+\end{subfigure}%
+\begin{subfigure}{0.33\textwidth}
+\includegraphics[scale=0.3,trim={50pt 70pt 320pt 45pt},clip]{../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/p4S8g2r5}
+\caption{$N_\text{zones}=8128$.}
+\end{subfigure}
+\caption{Relative asymmetry for $p=4$ finite elements on a $2^\text{nd}$-order mesh for $S_8$ level-symmetric angular quadrature; mesh overlay may be removed for clarity.}
+\label{fig:RZASMMSLinearRhoBrunnerp4S8g2Part2}
+\end{sidewaysfigure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

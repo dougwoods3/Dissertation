@@ -1,5 +1,5 @@
 \usepackage[letterpaper]{geometry}
-\geometry{verbose,tmargin=1.2in,bmargin=1in,lmargin=1.5in,rmargin=1in}
+\geometry{verbose,headheight=0.1in,tmargin=1.4in,bmargin=1in,lmargin=1.5in,rmargin=1in}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \usepackage{amsmath}
@@ -19,6 +19,8 @@
 \usepackage{epstopdf}
 \usepackage{graphicx}
 \usepackage{subcaption} % subfigure
+
+%\usepackage{soul} % underline line wrap
 
 \usepackage{pgfgantt} % Gantt chart
 
@@ -51,15 +53,22 @@
 \rfoot{}
 \renewcommand\headrule{}
 
+\usepackage[normalem]{ulem} % underline line wrap
 
-\usepackage[normalem]{ulem}
 \usepackage{tocloft}
 \renewcommand\cftsecfont{\normalfont}
 \renewcommand\cftsecpagefont{\normalfont}
-\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS}}}
+\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS {\color{red}use ``\\contheading'' in .toc}}}}
 \renewcommand\cfttoctitlefont{\Large\hfill}
 \renewcommand\cftaftertoctitle{\hfill\mbox{}}
+
+\usepackage{afterpage}
+\DeclareRobustCommand*{\contheading}{%
+  \afterpage{{\normalfont\Large\centering
+  TABLE OF CONTENTS (Continued)\par \hfill \underline{\normalsize\text{Page}} \par \bigskip}}}
+\addtocontents{toc}{\contheading}
 \addtocontents{toc}{~\hfill \underline{\text{Page}} \par}
+
 \addto\captionsenglish{\renewcommand*\listfigurename{\normalfont{LIST OF FIGURES}}}
 \renewcommand\cftloftitlefont{\Large\hfill}
 \renewcommand\cftafterloftitle{\hfill\mbox{}}
@@ -82,8 +91,8 @@
   {\par\medskip\noindent\minipage{\linewidth}}
   {\endminipage\par\medskip}
 
-\def\ThesisTitle{High Order Finite Elements \SN Transport in X-Y Geometry on Meshes with Curved Surfaces in the Thick Diffusion Limit}
-\def\DefenseDate{February 18, 2016}
+\def\ThesisTitle{Discrete Ordinates Radiaiton Transport using High Order Finite Element Spatial Discretization in \RZ\ Geometry on Meshes with Curved Surfaces}
+\def\DefenseDate{June 4, 2018}
 \def\ThesisAuthor{Douglas N. Woods}
 \def\MajorProfessor{Todd S. Palmer}
 
@@ -98,7 +107,7 @@
 \renewenvironment{thebibliography}[1] % for OSU thesis
      {\section*{
          {
-%         \vspace{-0.35in}
+         \vspace{-0.35in}
          \begin{center}
          \mdseries{\refname}
          \end{center}
