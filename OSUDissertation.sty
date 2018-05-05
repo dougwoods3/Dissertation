@@ -31,6 +31,9 @@
 \usetikzlibrary{patterns, shapes.geometric, arrows,calc}
 \usepackage{pgfplots}
 
+\usepgfplotslibrary{external} % generate plots externally
+\tikzexternalize
+
 
 \usepackage{threeparttable}
 \usepackage{multirow} % multirow tables
@@ -91,7 +94,7 @@
   {\par\medskip\noindent\minipage{\linewidth}}
   {\endminipage\par\medskip}
 
-\def\ThesisTitle{Discrete Ordinates Radiaiton Transport using High Order Finite Element Spatial Discretization in \RZ\ Geometry on Meshes with Curved Surfaces}
+\def\ThesisTitle{Discrete Ordinates Radiation Transport using High-Order Finite Element Spatial Discretizations on Meshes with Curved Surfaces}
 \def\DefenseDate{June 4, 2018}
 \def\ThesisAuthor{Douglas N. Woods}
 \def\MajorProfessor{Todd S. Palmer}

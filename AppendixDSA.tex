@@ -1,0 +1,48 @@
+\documentclass{article}
+
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Alternative Implementations for DSA with Robin Boundary Conditions}
+\label{sec:AltImpDSARobinBCs}
+We considered two other implementations for the Robin boundary conditions. Method 1 substitutes Equation \ref{eq:RobinBC} into Equation \ref{eq:DSADirichletLHS}:
+\begin{multline}
+b_{MIP,1} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathcal{D} + \left( D \grad \phi, \grad w \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i} \\
++ \left(\kappa_e \phi, w \right)_{\partial \mathcal{D}^d}
+- \frac{1}{2} \left(\phi, D \partial_n w \right)_{\partial \mathcal{D}^d}
++ \frac{1}{4} \left(\phi, w \right)_{\partial \mathcal{D}^d}
+\label{eq:Method1}
+\end{multline}
+
+Method 2 is very similar to Method 1 with one term removed:
+\begin{multline}
+b_{MIP,2} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathcal{D} + \left( D \grad \phi, \grad w \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i}
++ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i} \\
++ \left(\kappa_e \phi, w \right)_{\partial \mathcal{D}^d}
++ \frac{1}{4} \left(\phi, w \right)_{\partial \mathcal{D}^d}
+\label{eq:Method2}
+\end{multline}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

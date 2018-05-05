@@ -1,4 +1,6 @@
 .DS_Store
+*-figure*.pdf
+*-figure*.dep
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

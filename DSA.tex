@@ -3,82 +3,369 @@
 
 \begin{document}
 
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Diffusion Synthetic Acceleration}
 \label{sec:DSA}
-This section describes the methods to be carried out to accomplish the proposed research. We also consider some potential issues that we may encounter with some initial thoughts about mitigation. 
+{\color{red}COPIED FROM ANS TRANSACTION}
+{\color{blue}
+Radiation transport is integral to multiphysics applications such as inertial confinement fusion and astrophysics. Materials in these problems can be exceptionally optically thick and diffusive. A transport solver must be capable of accurate and efficient solutions to such problems. Previously, Woods et al. \cite{WoodsHoDgfemXyCurved} established a proof-of-concept for high order (HO) discontinuous Galerkin finite element (DGFEM) transport on meshes with curved surfaces. They numerically demonstrated the spatial convergence is order $p+1$, as expected~\cite{LasaintFEM}, where $p$ is the finite element polynomial order.
 
-\subsection{Modified Interior Penalty DSA}
+We present here an extension of this work that demonstrates a rapidly-convergent iterative solver for the FEM transport equations. It is necessary that an acceleration scheme is effective using HO finite elements. We use the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) established by Wang and Ragusa \cite{WangRagusaDSA}, which was demonstrated to be effective for HO DGFEM. The partially consistent MIP DSA equations stem from the symmetric interior penalty (IP) derivation of the diffusion equation. The IP method is not stable for optically thick cells so it was combined with the diffusion conforming form (DCF), a spatially discretized diffusion equation derived from the spatially discretized \SN\ equations that is not stable for intermediate or low optical thicknesses. The MIP equations adapt a ``switch'' to the IP method in optically thinner regions and the DCF method in optically thicker regions. Wang and Ragusa's Fourier analysis demonstrated the effectiveness of this DSA scheme and was corroberated their numerical results. Our previous work implemented this method, further corroberating the literature, and additionally demonstrated similar behavior on meshes with curved surfaces~\cite{WoodsDSA}.
 
-\subsubsection{Methodology}
-\subsubsection{Fourier Analysis}
-\subsubsection{Results}
-\subsubsection{As a Preconditioner}
+Although Wang and Ragusa proposed true vacuum boundary conditions for the MIP DSA equation, their finite element discretization implemented homogeneous Dirichlet boundary conditions on the problem boundaries. The zero incident current is the true vacuum boundary condition for the diffusion equation~\cite{AdamsDSADFEM}. It differs from the homogeneous Dirichlet boundary condition in that it allows the DSA solution to be nonzero on the boundary, thereby allowing a nonzero correction to the scalar flux. The present work derives and implements homogeneous Robin boundary conditions on the problem boundaries. We present our initial results demonstrating the behavior of the spectral radii for the newly implemented boundary condition.
 
-\subsection{MIP DSA with Robin Boundary Conditions}
+Previous literature has reported on some of the sensitivities that affect the spectral radius of DSA schemes: 
+%aspect ratios \cite{AdamsDSADFEM, TurcksinDiscontinuousDSA}, angular quadrature \cite{AdamsDSADFEM, TurcksinDiscontinuousDSA}, 
+polynomial order \cite{WangRagusaDSA, WoodsDSA}, and scattering ratios \cite{WangRagusaDSA, WoodsDSA, WareingDSADFEM}. Presently, we focus on the sensitivity of the spectral radius to the finite element order and the constant $C$ that arises in the stabilization parameter, for varying cell thicknesses.
 
-The diffusion synthetic acceleration (DSA) algorithm first solves the RTE, called a ``transport sweep'', followed by a diffusion solve for each source iteration. The RTE solve is performed exactly as before (Eqs. \ref{eqs:SourceIteration}) with notation changing to indicate a ``half step":
+We employ the Modular Finite Element Methods (MFEM)~\cite{MFEM_Web} package, developed at Lawrence Livermore National Laboratory, to generate the linear algebraic system of equations for each angle in the discrete ordinates quadrature set, and use UMFPack~\cite{DavisUMFPack} to solve this system of equations.
+}
+
+The general DSA algorithm is
 \begin{subequations}
 \begin{flalign}
-\vec{\Omega} \vd \grad I^{(l+1/2)} + \sigma_t I^{ \left( l + 1/2 \right) } & = \sigma_s E^{ \left( l \right) } + S_0 \\
-E^{\left( l+1/2 \right)} & = \sum_{m=1}^M w_m\ I_m ^{\left(l+1/2 \right)} \left(\vec{r}, \vec{\Omega} \right)
+\vec{\Omega} \vd \grad \psi_m^{(\ell+1/2)} + \sigma_t \psi_m^{(\ell+1/2)} & = \frac{1}{4 \pi} \left(\sigma_s \phi^{(\ell)} + S_0 \right) \label{eq:DSASITransport} \\
+\phi^{(\ell+1/2)} & = \sum_m w_m \psi_m^{(\ell+1/2)} \label{eq:DSASIPhiHalf} \\
+-\grad \vd D \grad \varphi^{(\ell+1/2)} + \sigma_a \varphi^{(\ell+1/2)} & = \sigma_s \left(\phi^{(\ell+1/2)} - \phi^{(\ell)} \right) \label{eq:DSASIEquation} \\
+\phi^{(\ell+1)} & = \phi^{(\ell+1/2)} + \varphi^{(\ell+1/2)} \label{eq:DSASIPhiEnd}
 \end{flalign}
-
-(Recall the energy density $E$ defined by Equation \ref{eq:EnergyDensity}.) Next, we solve the diffusion equation with a modified source term utilizing the half step and previous iteration RTE solutions.
-\begin{flalign}
-- \grad \vd D \grad \phi^{(I+1/2)} + \sigma_a \phi^{\left(l+1/2 \right)} = \sigma_s \left(E^{ \left( l+1/2 \right) } - E^{ \left( l \right) } \right)
-\end{flalign}
-
-The diffusion solution, $\phi^{ \left( l+1/2 \right)}$, becomes the correction factor at the half step. This correction factor is added to the energy density at the half step to complete the full DSA iteration.
-\begin{flalign}
-E^{\left( l+1 \right)} & = E^{\left( l+1/2 \right)} + \phi^{\left( l+1/2 \right)}
-\end{flalign}
-\label{eqs:DSASourceIteration}
 \end{subequations}
 
-\noindent This iterative process continues until the convergence criteria
+\noindent where $\phi^{(\ell+1/2)}$ is the radiation transport scalar flux solution at iteration $(\ell+1/2)$ prior to the DSA solve. Specifically, we solve for Equation~\ref{eq:DSASITransport} for each of the angular fluxes, $\psi^{(\ell+1/2)}_m$ at a half-step. Then, we perform a weighted summation of the angular fluxes to obtain the scalar flux at the half step, $\phi^{(\ell+1/2)}$. For comparison, the unaccelerated source iteration method can then be written $\phi^{(\ell+1)} = \phi^{(\ell+1/2)}$. The DSA method then solves a diffusion equation with a modified source. Equation~\ref{eq:DSASIEquation} is called the DSA equation. Finally, the summation of the solution to the DSA equation and the scalar flux at the half step becomes the scalar flux solution at the end of the iteration. This iterative process continues until the convergence criteria
 \begin{equation}
-\norm{E^{\left(l + 1 \right)} - E^{\left(l \right)}}_\infty < \varepsilon_\text{conv} \left(1 - \rho \right) \norm{E^{l + 1}}_\infty,
+\norm{\phi^{\left(\ell+1 \right)} - \phi^{\left(\ell \right)}}_\infty < \varepsilon_\text{conv} \left(1 - \rho \right) \norm{\phi^{\ell+1}}_\infty,
 \label{eq:ModifiedConvergenceCriteria}
 \end{equation}
 
-\noindent is met, where $\varepsilon_\text{conv}$ is a small number.
+\noindent is met, where $\varepsilon_\text{conv}$ is a small number. The solution to Equation~\ref{eq:DSASIEquation} is the context of this section.
 
-Wang and Ragusa \cite{WangRagusaDSA} proposed the modified interior penalty (MIP) equations for discretizing the DSA equation using the DGFEM:
-\begin{multline}
-b_{MIP} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
-+ \left( \kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
-- \frac{1}{2} \left( \phi, D \partial_n w \right)_{\partial \mathbb{V}^d} - \frac{1}{2} \left( D \partial_n \phi, w \right)_{\partial \mathbb{V}^d}
-\label{eq:DSALHS}
-\end{multline}
-
-\noindent and
-\begin{equation}
-l_{MIP} \left( w \right) = \left( Q_0, w \right)_\mathbb{V}
-\label{eq:DSARHS}
-\end{equation}
-
-\noindent where $b_{MIP}$ is the bilinear form, $l_{MIP}$ is the linear form, $w$ is the weight/test function, $\mathbb{V}$ denotes the element volume, $\partial \mathbb{V}^i$ is the internal edges, $\partial \mathbb{V}^d$ is on the problem boundary, $\partial_n$ is the partial derivative perpendicular to the edge (i.e. $\grad \vd \hat{n}$). The following definitions accompany Equations \ref{eq:DSALHS} and \ref{eq:DSARHS}.
-
-\begin{flalign}
-\llbracket \phi \rrbracket & = \phi^+ - \phi ^- \\
-\left\{ \!\! \left\{ \phi \right\} \!\! \right\} & = \frac{\left( \phi^+ + \phi^- \right)}{2}\\
-Q_0 & = \sigma_s \left( E^{\left( l+1/2 \right)} - E^{\left( l \right)} \right) \\
-\kappa_e^{IP} & = \begin{cases} \frac{c \left( p^+ \right)}{2} \frac{D^+}{h^+_{\bot}} + \frac{c \left( p^- \right)}{2} \frac{D^-}{h^-_\bot}, & \text{on interior edges } \left( \text{i.e., }\vec{r} \in E_h^i \right) \\
-c \left( p \right) \frac{D}{h_{\bot}}, & \text{on boundary edges } \left( \text{i.e., }\vec{r} \in \partial D^d \right) \end{cases} \label{eq:kappaIP} \\
-\kappa_e & = \max \left( \kappa_e^{IP}, \frac{1}{4} \right) \label{eq:MIP} \\
-c \left( p \right) & = C p \left( p +1 \right) \label{eq:ConstantC}
-\end{flalign}
-
-\noindent where $C$ is a an arbitrary constant, $D^\pm$ is the diffusion coefficient, $\phi^{\pm}$ is the scalar flux, $p^\pm$ is the order of finite elements, and $h^\pm_{\bot}$ is the perpendicular length of the cell, where the $\pm$ denotes either side of an element boundary. Equation \ref{eq:MIP} is a ``switch'' between two methods (interior penalty and diffusion conforming form), one of which is stable for optically thin regions and the other for optically thick regions. Wang and Ragusa \cite{WangRagusaDSA} used $C = 2$ and Turcksin and Ragusa \cite{TurcksinDiscontinuousDSA} used $C = 4$.
-%Equation \ref{eq:MIP} stops the stabilization parameter from going to zero as the cell becomes optically thick (i.e. as $\epsilon \rightarrow 0$, $D^\pm \rightarrow 0$, thus $\kappa_e^{IP} \rightarrow 0$).
+The remainder of this section is layed out as follows. In Section~\ref{sec:MIPDSA}, we introduce and discuss the MIP DSA equations and perform a sensitivity study on the spectral radius. In Section~\ref{sec:MIPDSARobinBCs}, we derive and integrate the Robin boundary condition into the MIP DSA equations. We also perform sensitivity studies using the Robin boundary condition implementation to evaluate the performance.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Zero Incident Current}
+\subsection{Modified Interior Penalty DSA}
+\label{sec:MIPDSA}
+The discretization of the DSA equation (Eq.~\ref{eq:DSASIEquation}) is of particular importance. A new spatial discretization method was introduced by Wang and Ragusa~\cite{WangRagusaDSA} called the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) method. They demonstrated it's effectiveness using high-order finite elements (up to $4^\text{th}$-order), hence the applicability in our context.
 
-Kanschat \cite{KanschatDGViscousIncompressFlow} shows that Equations \ref{eq:DSALHS} and \ref{eq:DSARHS} employ Nitsche's method for ``a fully conforming method of treating Dirichlet boundary values.'' The boundary terms $\left(\partial \mathbb{V}^d \right)$ in this form are homogeneous Dirichlet boundary conditions. The result is that the DSA correction for the energy density at the problem boundaries is zero, so the energy density is only updated by the RTE solution. That is, the DSA correction only accelerates the interior solution. Consequently, the energy densities on the problem boundary is only subjected to the RTE solution source iterations.
+The bilinear form of the MIP DSA equations is
+\begin{subequations}
+\begin{multline}
+b_\text{MIP,D} \left(\varphi, v \right) = \left(\sigma_a\ \varphi, v \right)_\mathcal{D} + \left(D \grad \varphi, \grad v \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^i}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\left\{ D \partial_n v \right\} \! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \! \left\{ D \partial_n \varphi \right\} \! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^i} \\
++ \left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^d}
+- \frac{1}{2} \left( \varphi, D \partial_n v \right)_{\partial \mathcal{D}^d} - \frac{1}{2} \left( D \partial_n \varphi, v \right)_{\partial \mathcal{D}^d},
+\label{eq:DSADirichletLHS}
+\end{multline}
+
+\noindent and the linear form is
+\begin{equation}
+l_{MIP} \left( v \right) = \left( Q_0, v \right)_\mathcal{D}
+\label{eq:DSARHS}
+\end{equation}
+\end{subequations}
+
+\noindent where
+\begin{flalign}
+\llbracket \varphi \rrbracket & = \varphi^+ - \varphi^- ,\\
+\left\{ \! \left\{\varphi \right\} \! \right\} & = \left(\varphi^+ + \varphi^- \right)/2, \\
+Q_0 & = \sigma_s \left(\phi^{\left( l+1/2 \right)} - \phi^{\left( l \right)} \right),
+\end{flalign}
+
+\noindent and the inner product notation
+\begin{flalign}
+\left(\varphi,v \right)_{\mathcal{D}} & = \int_{\mathcal{D}} \varphi v\ d\vec{x}.
+\end{flalign}
+
+\noindent is used. The discretization of the diffusion term in the DSA equation requires an integration by parts. The resultant surface term is then divided into mesh interior surfaces denoted by $\partial \mathcal{D}^i$ and problem domain surfaces, $\partial \mathcal{D}^d$. The second and third lines of Equation~\ref{eq:DSADirichletLHS} are the mesh interior and problem domain surface terms, respectively. These are weakly enforced homogeneous Dirichlet conditions, as denoted by $b_\text{MIP,D}$.
+
+The penalty term in the bilinear form (Eq.~\ref{eq:DSADirichletLHS}) is
+\begin{flalign}
+\kappa_e & = \max \left( \kappa_e^{IP}, \frac{1}{4} \right), \label{eq:MIP}
+\end{flalign}
+
+\noindent where the IP stabilization parameter is
+\begin{flalign}
+\kappa_e^{IP} & =
+\begin{cases} \frac{c \left( p^+ \right)}{2} \frac{D^+}{h^+_{\bot}} + \frac{c \left( p^- \right)}{2} \frac{D^-}{h^-_\bot}, & \text{on interior surfaces, i.e., } \partial \mathcal{D}_i \\
+c \left( p \right) \frac{D}{h_{\bot}}, & \text{on boundary surfaces, i.e., } \partial \mathcal{D}_d
+\end{cases}, \label{eq:kappaIP}
+\end{flalign}
+
+\noindent where
+\begin{flalign}
+c \left( p \right) & = C p \left( p +1 \right). \label{eq:cp}
+\end{flalign}
+
+\noindent The value $h_\perp^\pm$ is the perpendicular cell size on either side of the cell surface, $p$ is the finite element order, $C$ is an arbitrary constant that is investigated in this research. Equation~\ref{eq:MIP} contains a ``switch'' between the IP and DCF penalty coefficients, $\kappa_e^{IP}$ and $1/4$, respectively. Equations~\ref{eq:kappaIP} and~\ref{eq:cp} determine when the switch occurs and is largely dependent upon problem constraints.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Spectral Radius Sensitivity to Constant $C$}
+Previous researchers used values for $C$ arbitrarily. Wang and Ragusa \cite{WangRagusaDSA} used $C = 2$ and Turcksin and Ragusa \cite{TurcksinDiscontinuousDSA} used $C = 4$. Here, we perform a study to assess the sensitivity of the spectral radius to changes in the constant $C$ (see Eq.~\ref{eq:cp}) for various cell thicknesses, and finite element orders. 
+
+Our test problems are the same as the ones used by Wang and Ragusa~\cite{WangRagusaDSA} for comparison. They are homogeneous with vacuum boundaries, have a scattering ratio $c=0.9999$, and an isotropic volumetric source $S_0 = 1$ cm$^{-3}$ s$^{-1}$. The mesh is a 10 cm by 10 cm quadrilateral grid uniformly divided into 100 zones, and we use $S_8$ level symmetric angular quadrature.  The total opacity $\sigma_t$ is chosen at runtime for the appropriate optical thickness. For cell thicknesses less than 1 mfp, $\sigma_t$ is set to 1 cm$^{-1}$ and the mesh is incrementally refined to make each zone less optically thick.
+
+Figure~\ref{fig:MIPHOC2Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=2$. We immediately notice peaks approaching $\rho = 0.9$, where the method performs the ``switch''. The IP method works well in the optically thin region (left-hand-side of the figure) and the DCF method works well in the intermediate and optically thick regions (right-hand-side of the figure). This result is similar to numerical results of Wang and Ragusa~\cite{WangRagusaDSA}. There is little sensitivity of finite element order in the very optically thin and optically thick regions. However, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC2Ortho.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=2$ on an orthogonal mesh with homogeneous Dirichlet boundary conditions in the DSA solve; plot reproduced from Woods et al.~\cite{WoodsDSA}.}
+\label{fig:MIPHOC2Ortho}
+\end{figure}
+
+Figure~\ref{fig:MIPHOC4Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$. We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} are significantly diminished. The value of $C$ moved the ``switch'' toward the optically thick region, thereby not forcing the DCF method to operate in the optically thin regime. The larger value of $C$ also impacts the IP method spectral radius, resulting in a slight rise (of nearly $0.1$ for higher finite element orders) before the switch to the DCF method. Again, there is little sensitivity of finite element order in the very optically thin and optically thick regions. Still, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC4Ortho.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=4$ on an orthogonal mesh with homogeneous Dirichlet boundary conditions in the DSA solve; plot reproduced from Woods et al.~\cite{WoodsDSA}.}
+\label{fig:MIPHOC4Ortho}
+\end{figure}
+
+Figure~\ref{fig:MIPHOC6Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=6$. We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} remain significantly diminished like with $C=4$. The value of $C$ moved the ``switch'' further toward the optically thick region, thereby requiring the DCF method to operate even less in the optically thin regime. The larger value of $C$ impacts the IP method spectral radius again, resulting in a slight rise of over $0.1$ (for higher finite element orders) before the switch to the DCF method. Again, there is little sensitivity of finite element order in the very optically thin and optically thick regions. Still, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC6Ortho.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=6$ on an orthogonal mesh with homogeneous Dirichlet boundary conditions in the DSA solve; plot reproduced from Woods et al.~\cite{WoodsDSA}.}
+\label{fig:MIPHOC6Ortho}
+\end{figure}
+
+In all cases $C=\{2,4,6\}$, the spectral radius was less than one, indicating these methods are unconditionally converging. We observed that larger values of $C$ reduce the spectral radius in the intermediate range by mitigating the observable peaks. However, the larger $C$ values increased the spectral radius toward the optically thin region by introducing a ``hump''. Assuming that the optical thickness, diffusion coefficient $D^\pm$, the mesh size $h^\pm$, and finite element order $p^\pm$ are all problem dependent, only the value of $C$ remains user defined. Knowing the problem specifications {\em a priori} may inform a particular choice of $C$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Sensitivity of the Spectral Radius to the Scattering Ratio $c$}
+The problems here have the same cross sections and source as above but 1 cm by 1 cm grid uniformly divided into 100 zones. [An orthogonal grid would have 0.1 cm by 0.1 cm zoning.] Figure \ref{fig:cP4C4OrthoUnit} shows the spectral radii for varying the scattering ratios using $4^\text{th}$-order finite elements and $C=4$ on an orthogonal mesh. Figure \ref{fig:cP4C43MeshUnit} shows the same results on a $3^\text{rd}$-order mesh. Increasing the scattering ratio increased the spectral radius, approaching an apparent limit. Adding curvature to the mesh surfaces also increased the spectral radius. Although the spectral radius is higher, the jump when the ``switch'' occurs is not as significant on the $3^\text{rd}$-order mesh as it is with the orthogonal grid.
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\columnwidth,
+    height=6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=1,xmax=1e3,
+  	ymin=0,ymax=1.0]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=0.9]{../../Research/graphics/WRP4C4OrthoUnit.dat};
+\addlegendentry{$c=0.9$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=0.99]{../../Research/graphics/WRP4C4OrthoUnit.dat};
+\addlegendentry{$c=0.99$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=0.9999]{../../Research/graphics/WRP4C4OrthoUnit.dat};
+\addlegendentry{$c=0.9999$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=0.999999]{../../Research/graphics/WRP4C4OrthoUnit.dat};
+\addlegendentry{$c=0.999999$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for various scattering ratios $c$ using $4^\text{th}$-order finite elements, constant $C=4$, and orthogonal mesh.}
+\label{fig:cP4C4OrthoUnit}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\columnwidth,
+    height=6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=1,xmax=1e3,
+  	ymin=0,ymax=1.0]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=0.9]{../../Research/graphics/WRP4C43MeshUnit.dat};
+\addlegendentry{$c=0.9$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth] table [x=mfp, y=0.99]{../../Research/graphics/WRP4C43MeshUnit.dat};
+\addlegendentry{$c=0.99$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth] table [x=mfp, y=0.9999]{../../Research/graphics/WRP4C43MeshUnit.dat};
+\addlegendentry{$c=0.9999$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=0.999999]{../../Research/graphics/WRP4C43MeshUnit.dat};
+\addlegendentry{$c=0.999999$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for various scattering ratios $c$ using $4^\text{th}$-order finite elements, constant $C=4$, and third-order mesh.}
+\label{fig:cP4C43MeshUnit}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Infinite Medium MIP DSA Results}
+It is possible that the previous finite domain problems did not excite all of the error modes. Here, we test a uniform grid with periodic boundaries on all four sides of the problem. We performed some of the same calculations as in the previous subsection. Figures \ref{fig:MIP2OrthoPer} - \ref{fig:MIP6OrthoPer} show the results.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\columnwidth,
+    height=6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.00625,xmax=1.1e5,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{../../Research/graphics/WRHOC2OrthoPer.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=2$ on a periodic orthogonal mesh.}
+\label{fig:MIP2OrthoPer}
+\end{figure}
+
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\columnwidth,
+    height=6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.00625,xmax=1.1e5,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{../../Research/graphics/WRHOC4OrthoPer.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=4$ on a periodic orthogonal mesh.}
+\label{fig:MIP4OrthoPer}
+\end{figure}
+
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\columnwidth,
+    height=6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.00625,xmax=1.1e5,
+  	ymin=0,ymax=1]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{../../Research/graphics/WRHOC6OrthoPer.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=6$ on a periodic orthogonal mesh.}
+\label{fig:MIP6OrthoPer}
+\end{figure}
+
+We see the spectral radii in all plots has similar behavior as in the finite domain plots. However, the magnitudes are lower in general and the peaks are almost nonexistent at the ``switch''. Notably, $p=1$ has the largest peak. The Fourier analysis performed by Wang and Ragusa \cite{WangRagusaDSA} spans $10^{-3}$ to $10^3$ mfps with smooth behavior at either of the ends. Numerically, we observe the smooth behavior for thicker cells but the optically thin cells do not behave as well. In some instances, the spectral radius is erratic and does not converge. These erratic spectral radii are given the value of 1 in Figures \ref{fig:MIP2OrthoPer} - \ref{fig:MIP6OrthoPer}. Without DSA, these thin problems converge very quickly. The observed instability occurs outside the range of the results published by Wang and Ragusa. At this time, we do are uncertain whether these results are real or an artifact of numerical precision, but we plan to investigate in the near future.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{MIP DSA with Robin Boundary Conditions}
+\label{sec:MIPDSARobinBCs}
+Kanschat \cite{KanschatDGViscousIncompressFlow} shows that Equation~\ref{eq:DSALHS} employ Nitsche's method for ``a fully conforming method of treating Dirichlet boundary values.'' The boundary terms $\left(\partial \mathcal{D}^d \right)$ in this form are homogeneous Dirichlet boundary conditions. The result is that the DSA correction for the scalar flux at the problem boundaries is zero, so the scalar flux is only updated by the transport solution. That is, the DSA correction only accelerates the interior solution. Consequently, the scalar fluxes on the problem boundary are only subjected to the transport equation solution source iterations.
 
 Instead, a DSA update equation should incorporate Robin boundary conditions (zero incident partial current) on the boundaries,
 \begin{flalign}
@@ -87,53 +374,217 @@ Instead, a DSA update equation should incorporate Robin boundary conditions (zer
 \label{eq:RobinBC}
 \end{flalign}
 
-\noindent thereby allowing a correction of the boundary energy densities. This boundary condition requires modification of Equation \ref{eq:DSALHS}. Three implementaion methods are proposed here. Method 1 substitutes Equation \ref{eq:RobinBC} into Equation \ref{eq:DSALHS}:
-\begin{multline}
-b_{MIP,1} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
-+ \left(\kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
-- \frac{1}{2} \left(\phi, D \partial_n w \right)_{\partial \mathbb{V}^d}
-+ \frac{1}{4} \left(\phi, w \right)_{\partial \mathbb{V}^d}
-\label{eq:Method1}
-\end{multline}
-
-\noindent Method 2 is very similar to Method 1 with one term removed:
-\begin{multline}
-b_{MIP,2} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
-+ \left(\kappa_e \phi, w \right)_{\partial \mathbb{V}^d}
-+ \frac{1}{4} \left(\phi, w \right)_{\partial \mathbb{V}^d}
-\label{eq:Method2}
-\end{multline}
-
-\noindent Method 3 stems from a different approach. After performing the integration by parts on the diffusion term,
+\noindent thereby allowing a correction of the boundary scalar fluxes. This boundary condition requires modification of Equation \ref{eq:DSADirichletLHS}. We begin by integrating the diffusion term by parts and separating the surface term into the mesh interior and problem domain boundaries:
 \begin{flalign}
-- \left(\grad \vd D \grad \phi, w \right)_\mathbb{V} = \left(D \grad \phi, \grad w \right)_\mathbb{V} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^i} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^d},
-\label{eq:IntegrationByParts}
+- \left(\grad \vd D \grad \varphi, v \right)_{\mathcal{D}} &= \left(D \grad \varphi, \grad v \right)_{\mathcal{D}} - \left(D \grad \varphi \vd \hat{n}, v \right)_{\partial \mathcal{D}^i} - \left(D \grad \varphi \vd \hat{n}, v \right)_{\partial \mathcal{D}^d}.
 \end{flalign}
 
-\noindent we employ Equation \ref{eq:RobinBC}:
+\noindent We substitute the analytic vacuum boundary condition,
 \begin{flalign}
-- \left(\grad \vd D \grad \phi, w \right)_\mathbb{V} = \left(D \grad \phi, \grad w \right)_\mathbb{V} - \left(D \grad \phi \vd \hat{n}, w \right)_{\partial \mathbb{V}^i} + \frac{1}{2} \left(\phi, w \right)_{\partial \mathbb{V}^d}
+0 & = \frac{1}{4} \varphi + \frac{1}{2} D \partial_n \varphi,
 \end{flalign}
 
-\noindent Thus, Method 3 is
+\noindent into the problem boundary term,
+\begin{flalign}
+- \left(D \grad \varphi \vd \hat{n}, v \right)_{\partial \mathcal{D}^d} & = \frac{1}{2} \left(\varphi, v \right)_{\partial \mathcal{D}^d}.
+\end{flalign}
+
+\noindent The vacuum boundary condition MIP DSA equation becomes,
 \begin{multline}
-b_{MIP,3} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathbb{V} + \left( D \grad \phi, \grad w \right)_\mathbb{V} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathbb{V}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i} \\
-+ \frac{1}{2} \left(\phi, w \right)_{\partial \mathbb{V}^d}
-\label{eq:Method3}
+b_{MIP,V} \left(\varphi, v \right) = \left(\sigma_a\ \varphi, v \right)_\mathcal{D} + \left(D \grad \varphi, \grad v \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^i}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\left\{ D \partial_n v \right\} \! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \! \left\{ D \partial_n \varphi \right\} \! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^i} \\
++ \frac{1}{2} \left(\varphi, v \right)_{\partial \mathcal{D}^d},
+\label{eq:DSARobinLHS}
 \end{multline}
 
-We will implement these three methods and investigate their impact on the solution behavior. We will first solve a 1-D analytic diffusion equation problem with zero incident current boundary conditions to evaluate our implementation.
+\noindent and the linear form remains Eq.~\ref{eq:DSARHS}. The only difference between Eqs.~\ref{eq:DSADirichletLHS} and~\ref{eq:DSARobinLHS} are the problem boundary terms.
 
+%Equation \ref{eq:MIP} stops the stabilization parameter from going to zero as the cell becomes optically thick (i.e. as $\epsilon \rightarrow 0$, $D^\pm \rightarrow 0$, thus $\kappa_e^{IP} \rightarrow 0$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Accuracy}
+\label{sec:MIPDSARobinBCAccuracy}
+An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using the proposed Robin boundary condition methods. The original MIP DSA method (Equation~\ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is
+\begin{subequations}
+\begin{flalign}
+\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{S_0}{\sigma_a},
+\end{flalign}
+\begin{multline}
+c_1 = \frac{1}{4} \frac{S_0}{\sigma_a} \left[ \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right) \right] \\
+\cdot \left[\left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^2 - \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right)^2 e^{2/L} \right]^{-1},
+\end{multline}
+\begin{flalign}
+c_2 & = \left[-c_1 \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \frac{1}{4} \frac{S_0}{\sigma_a} \right] e^{1/L} \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^{-1}.
+\end{flalign}
+\end{subequations}
+
+Table~\ref{tab:1DDiffusionComparison} shows the errors between our DGFEM solution and the analytic diffusion equation for various cell sizes. For all cell sizes, the Robin boundary condition method achieves errors on the order of $10^{-10}$ or better. This helps confirm the correct implementation of the vacuum boundary conditions on the DSA equation. We also notice that as $\varepsilon \rightarrow 0$, we have $D=\varepsilon/(3 \sigma_t) \rightarrow 0$, and
+\begin{flalign}
+\left[\left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^d} - \frac{1}{2} \left( \varphi, D \partial_n v \right)_{\partial \mathcal{D}^d} - \frac{1}{2} \left( D \partial_n \varphi, v \right)_{\partial \mathcal{D}^d} \right] \rightarrow \left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^d}.
+\end{flalign}
+
+\noindent Further, we have $\kappa_e^{IP} \rightarrow 0$ and thus, $\kappa_e \rightarrow 1/4$ by Equation~\ref{eq:MIP}. So, as the material becomes increasingly optically thick, the homogeneous Dirichlet boundary condition converges to
+\begin{flalign}
+\frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}^d},
+\end{flalign}
+
+\noindent the homogeneous Robin boundary condition implementation.
+
+\begin{table}[!h]
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|}
+\hline
+$\varepsilon$ & Robin BC & Dirichlet BC \\\hline
+10 & $4.05 \times 10^{-11}$ & 0.722 \\\hline
+1 & $2.03 \times 10^{-10}$ & 0.363 \\\hline
+0.1 & $3.39 \times 10^{-10}$ & 0.0607 \\\hline
+0.01 & $3.63 \times 10^{-10}$ & 0.00650 \\\hline
+$1 \times 10^{-3}$ & $3.66 \times 10^{-10}$ & $6.55 \times 10^{-4}$ \\\hline
+$1 \times 10^{-4}$ & $3.66 \times 10^{-10}$ & $6.56 \times 10^{-5}$ \\\hline
+$1 \times 10^{-5}$ & $3.67 \times 10^{-10}$ & $6.54 \times 10^{-6}$ \\\hline
+$1 \times 10^{-6}$ & $4.08 \times 10^{-10}$ & $3.91 \times 10^{-7}$ \\\hline
+\end{tabular}}
+\caption{L$_2$ norm of the errors between the diffusion equation using the given boundary condition method and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements, $C=4$, on an orthogonal mesh with 2304 zones.}
+\label{tab:1DDiffusionComparison}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Fourier Analysis}
-\subsubsection{Results}
+\label{sec:RobinBCFourierAnalysis}
+In this section, we perform a Fourier analysis of the DSA + SI scheme using Robin boundary conditions. We begin by subtracting Equation~\ref{eq:DSASITransport} from the analytic Equations~\ref{eq:RadTransport}~and~\ref{eq:ScalarFluxIntegral},
+\begin{flalign}
+\vec{\Omega} \vd \grad \hat{\psi}_m^{(\ell+1/2)} + \sigma_t \hat{\psi}_m^{(\ell+1/2)} & = \frac{1}{4 \pi} \sigma_s \hat{\phi}^{(\ell)},
+\end{flalign}
+
+\noindent where $\hat{\psi}_m^{(\ell+1/2)} = \psi _m- \psi_m^{(\ell+1/2)}$ and $\hat{\phi}^{(\ell)} = \phi - \phi^{(\ell)}$ are the deviations of the approximate solution from the exact solution.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Sensitivity Study of the Spectral Radius}
+\label{sec:SensStudySpecRadRobin}
+Figure~\ref{fig:MIPHOC2OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=2$ using the homogeneous Robin boundary condition. We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. Thus, it is challenging to determine when the ``switch'' between the IP and DCF methods occurs. Contrasting the homogeneous Dirichlet boundary condition method, there is very little sensitivity of finite element order in the intermediate optical thickness region. However, we observe slight dependencies of the spectral radius to the finite element order in the optically thin and optically thick regions. Also, contrasting the Dirichlet boundary conditions, the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions. 
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1,
+  	]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC2OrthoCurrent.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=2$ on an orthogonal mesh using the vacuum boundary MIP DSA method.}
+\label{fig:MIPHOC2OrthoCurrent}
+\end{figure}
+
+Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. Contrasting the homogeneous Dirichlet boundary condition method, there is very little sensitivity of finite element order in the intermediate optical thickness region. However, we observe slight dependencies of the spectral radius to the finite element order in the optically thin and optically thick regions. Also, contrasting the Dirichlet boundary conditions, the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions. Figures~\ref{fig:MIPHOC2OrthoCurrent}~and~\ref{fig:MIPHOC4OrthoCurrent} are nearly indistinguishable. Hence, a choice between $C=2$ and $C=4$ is moot.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1,
+  	]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC4OrthoCurrent.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=4$ on an orthogonal mesh using the zero incident current DSA method.}
+\label{fig:MIPHOC4OrthoCurrent}
+\end{figure}
+
+Figure~\ref{fig:MIPHOC6OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=6$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. However, similar to Figure~\ref{fig:MIPHOC6Ortho}, there is a rise in the spectral radius (a ``hump'') in nearly the same cell size range. The remainder of the spectral radii profiles are very similar to those of Figures~\ref{fig:MIPHOC2OrthoCurrent}~and~\ref{fig:MIPHOC4OrthoCurrent}. Since there is no spectral radius improvement in any other cell regimes, this choice for $C$ is undesirable. Again, we observe the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions than with using homogeneous Dirichlet boudnary conditions.
+
+\begin{figure}[!hbt]
+\centering
+\begin{tikzpicture}[scale=1]
+  \begin{axis}[
+    width=\textwidth,
+    %height=4.6cm,
+    grid=major,
+    xlabel={cell size (mfp)},
+    ylabel={spectral radius},
+  	xmode=log,
+  	xmin=0.0625,xmax=1.1e6,
+  	ymin=0,ymax=1,
+  	]
+\addplot[mark=*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p1]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=1$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p2]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=2$}
+\addplot[mark=*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p3]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=3$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=black, smooth] table [x=mfp, y=p4]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=4$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=blue, mark options={solid, fill=blue}, smooth, dotted] table [x=mfp, y=p5]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=5$}
+\addplot[mark=diamond*, line width=1pt, mark size=2, draw=red, mark options={solid, fill=red}, smooth, dashed] table [x=mfp, y=p6]{./graphics/WRHOC6OrthoCurrent.dat};
+\addlegendentry{$p=6$}
+  \end{axis}
+\end{tikzpicture}
+\caption{Spectral radius data for varying $p$ with $C=6$ on an orthogonal mesh using the zero incident current DSA method.}
+\label{fig:MIPHOC6OrthoCurrent}
+\end{figure}
+
+Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$ using homogeneous Robin boundary condition. The results are remarkably similar to Figure~\ref{fig:MIPHOC2OrthoCurrent}, indicating that the spectral radius is less sensitive to the interior surface terms than the problem boundary conditions.
+
+We have learned that 
+Figure~\ref{fig:MIPHOC2OrthoCurrent} shows the spectral radii using the homogeneous Robin boundary condition. In contrast, the Robin boundary condition method is very smooth and consistently below $\rho = 0.6$ through the range of cell sizes. However, the latter has substantially larger spectral radii in the optically thick regime.
+
+The DCF method was originally derived using the homogeneous Dirichlet boundary conditions so that it was a consistent discretization with the discretized transport equation.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{As a Preconditioner}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Conclusions}
+{\color{red}COPIED FROM ANS TRANSACTION}
+{\color{blue}
+Our numerical results indicate that we have correctly implemented the MIP DSA equations using homogeneous Robin boundary conditions.
+
+We characterized the spectral radius for several combinations of the constant $C$ and the finite element order $p$ for variable cell sizes. While we see SI acceleration in all cases, there is not a set of parameters that promote smaller spectral radii in all regimes, but problem constraints may motivate the parameter choice. Each variable, $C$ and $p$, increased the spectral radius to some degree. The spectral radius using the Robin boundary condition method is substantially less sensitive to the constant $C$ than with Dirichlet boundary conditions.
+
+In the future, we will perform a Fourier analysis of the implemented vacuum boundary condition method. We will also consider a wide range of problems including heterogeneous media. To avoid a substantial degredation in effectiveness, this requires a relatively modern technique of preconditioning a Krylov method with the DSA operator~\cite{WarsaKrylovDSA}. Wang and Ragusa~\cite{WangRagusaDSA} observed this degradation of effectiveness but MIP DSA has yet to be used as a preconditioner to a Krlyov method.
+}
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}
