@@ -9,7 +9,7 @@
 The complicated shapes of each mesh zone create a challenge by having to solve the discretized equations for each unique mesh zone. We can avoid having to solve a unique set of equations for each mesh zone by transforming the mesh zone into the reference element. Each mesh zone will have a unique transformation but an identical set of basis functions to obtain the solution on the reference element.
 
 {\color{red}
-These meshes add complications to the numerical methods used to solve the transport equation. In particular, cycles can be present during the spatial sweep of the mesh. It is common to solve for a single mesh zone using incident angular flux information and propagate that angular flux from mesh zone to mesh zone, sweeping through the grid. However, if any particular mesh zone has both incident and outgoing angular fluxes to another mesh zone, they depend upon each other in a cyclic manner. ``Breaking the cycle'' is some fashion is necessary to perform the numerical computation. Alternatively, instead of sweeping through the grid, we utilize MFEM to generate the solution matrix for all of the mesh zones for the entire problem. This is computationally intensive, but it bypasses the need to consider any cycles that may occur.
+These meshes add complications to the numerical methods used to solve the transport equation. In particular, cycles can be present during the spatial sweep of the mesh~\cite{Pautz2002ParallelSweeps,WareingDFEM3DUnsGrid}. It is common to solve for a single mesh zone using incident angular flux information and propagate that angular flux from mesh zone to mesh zone, sweeping through the grid. However, if any particular mesh zone has both incident and outgoing angular fluxes to another mesh zone, they depend upon each other in a cyclic manner. ``Breaking the cycle'' is some fashion is necessary to perform the numerical computation. Alternatively, instead of sweeping through the grid, we utilize MFEM to generate the solution matrix for all of the mesh zones for the entire problem. This is computationally intensive, but it bypasses the need to consider any cycles that may occur.
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,27 +43,6 @@ are the quadratic basis functions that have support points at typical locations 
 \begin{figure}[!htb]
 \centering
 \hspace{-25pt}
-\begin{minipage}[c]{7.25cm}
-\raggedright
-\begin{tikzpicture}
-\begin{axis}[
-	axis lines=left,
-	width=6.5cm,
-	height=6.5cm,
-    xmin=0, xmax=1,
-    ymin=0, ymax=1,
-    xlabel={$\rho$},
-    ylabel={$\kappa$},
-    ]
-    \addplot[only marks, mark=*, mark size=1, color=blue, mark options={solid, fill=blue}] table [x index=0, y index=1]{./graphics/MeshReference.dat};
-    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshNodes.dat};
-\end{axis}
-\end{tikzpicture}
-\end{minipage}
-\begin{minipage}[c]{0.75cm}
-\centering
-{\Huge$\mapsto$}
-\end{minipage}
 \begin{minipage}[c]{7.5cm}
 \raggedleft
 \begin{tikzpicture}
@@ -81,7 +60,28 @@ are the quadratic basis functions that have support points at typical locations 
 \end{axis}
 \end{tikzpicture}
 \end{minipage}
-\caption{Example of mapping the reference element to a physical element. {\color{red}Switch these around to map the physical element to the reference element.}}
+\begin{minipage}[c]{0.75cm}
+\centering
+{\Huge$\mapsto$}
+\end{minipage}
+\begin{minipage}[c]{7.25cm}
+\raggedright
+\begin{tikzpicture}
+\begin{axis}[
+	axis lines=left,
+	width=6.5cm,
+	height=6.5cm,
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    xlabel={$\rho$},
+    ylabel={$\kappa$},
+    ]
+    \addplot[only marks, mark=*, mark size=1, color=blue, mark options={solid, fill=blue}] table [x index=0, y index=1]{./graphics/MeshReference.dat};
+    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshNodes.dat};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Example of mapping the reference element to a physical element.}
 \label{fig:HOMapping}
 \end{figure}
 

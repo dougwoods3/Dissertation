@@ -61,7 +61,7 @@
 \usepackage{tocloft}
 \renewcommand\cftsecfont{\normalfont}
 \renewcommand\cftsecpagefont{\normalfont}
-\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS {\color{red}use ``\\contheading'' in .toc}}}}
+\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS {\color{red}use ``\textbackslash contheading'' in .toc}}}}
 \renewcommand\cfttoctitlefont{\Large\hfill}
 \renewcommand\cftaftertoctitle{\hfill\mbox{}}
 
@@ -72,14 +72,19 @@
 \addtocontents{toc}{\contheading}
 \addtocontents{toc}{~\hfill \underline{\text{Page}} \par}
 
-\addto\captionsenglish{\renewcommand*\listfigurename{\normalfont{LIST OF FIGURES}}}
+\addto\captionsenglish{\renewcommand*\listfigurename{\normalfont{LIST OF FIGURES {\color{red}use ``\textbackslash contlofheading'' in .lof}}}}
 \renewcommand\cftloftitlefont{\Large\hfill}
 \renewcommand\cftafterloftitle{\hfill\mbox{}}
-\addtocontents{lof}{\underline{\text{Figure}} \hfill \underline{\text{Page}} \par}
+\DeclareRobustCommand*{\contlofheading}{%
+  \afterpage{{\normalfont\Large\centering
+  LIST OF FIGURES (Continued)\par \underline{\normalsize\text{Figure}} \hfill \underline{\normalsize\text{Page}} \par \bigskip}}}
+\addtocontents{lof}{\contlofheading}
+\addtocontents{lof}{\underline{\normalsize\text{Figure}} \hfill \underline{\normalsize\text{Page}} \par \bigskip}
+
 \addto\captionsenglish{\renewcommand*\listtablename{\normalfont{LIST OF TABLES}}}
 \renewcommand\cftlottitlefont{\Large\hfill}
 \renewcommand\cftafterlottitle{\hfill\mbox{}}
-\addtocontents{lot}{\underline{\text{Table}} \hfill \underline{\text{Page}} \par}
+\addtocontents{lot}{\underline{\normalsize\text{Table}} \hfill \underline{\normalsize\text{Page}} \par \bigskip}
 
 \newcommand{\SN}{$S_N$}
 \newcommand{\RZ}{$R$-$Z$}
