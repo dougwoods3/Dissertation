@@ -7,40 +7,20 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation in MFEM}
-The open source finite element library Modular Finite Elements Method (MFEM\footnote{\url{mfem.org}}) \cite{MFEM_Web} was used to create the system of linear equations to be solved by a linear algebra solver. The user chooses various parameters to create the system of equations and passes them into MFEM as arguments (i.e. the order of finite elements, the mesh, the number of times to refine the mesh, the order of the mesh, any mesh transformations, the linear algebra solver method, the source iteration convergence criteria, the maximum number of source iterations to perform, the initial guess for the scalar flux, and, in diffusion limit problems, the scaling factor to be applied).
+The open source finite element library Modular Finite Elements Method (MFEM\footnote{\url{mfem.org}})~\cite{MFEM_Web} was used to create the system of linear equations to be solved by a linear algebra solver. The user chooses various parameters to create the system of equations and passes them into MFEM as arguments (i.e. the order of finite elements, the mesh, the number of times to refine the mesh, the order of the mesh, any mesh transformations, the linear algebra solver method, the source iteration convergence criteria, the maximum number of source iterations to perform, the initial guess for the scalar flux, and, in diffusion limit problems, the scaling factor to be applied).
 
-MFEM creates the matrices and a linear solver computes the angular flux. This research utilizes the serial version of MFEM (as opposed to the parallel version where the spatial domain is solved in parallel) and the direct solver UMFPack\footnote{\url{http://faculty.cse.tamu.edu/davis/suitesparse.html}} \cite{SuiteSparse,DavisUMFPack} to solve the equations using a \emph{LU} decomposition. It is common for transport solvers to solve the local system of equations for an individual spatial cell and sweep through the problem domain, propagating information from one cell to the next. Instead, we use MFEM to create the system of equations for the entire problem domain and solve for all of the unknowns in all cells simultaneously. This is more computationally intensive because all of the degrees of freedom in the entire problem domain must be solved for simultaneously. However, mesh zone complications, such as cycles, may be present in the mesh. We avoid having to ``break the cycles'' by solving for the entire problem simultaneously.
+MFEM creates the matrices and a linear solver computes the angular flux. This research utilizes the serial version of MFEM (as opposed to the parallel version where the spatial domain is solved in parallel) and the direct solver UMFPack\footnote{\url{http://faculty.cse.tamu.edu/davis/suitesparse.html}}~\cite{SuiteSparse,DavisUMFPack} to solve the equations using a \emph{LU} decomposition. It is common for transport solvers to solve the local system of equations for an individual spatial cell and sweep through the problem domain, propagating information from one cell to the next. Instead, we use MFEM to create the system of equations for the entire problem domain and solve for all of the unknowns in all cells simultaneously. This is more computationally intensive because all of the degrees of freedom in the entire problem domain must be solved for simultaneously. However, mesh zone complications, such as cycles, may be present in the mesh. We avoid having to ``break the cycles'' by solving for the entire problem simultaneously.
+
+The following two sections describe the operators used in MFEM to accomplish this research. Specifically, Section~\ref{sub:TransportOperators} describes the operators used to solve the transport equation. Section~\ref{sub:MIPDSAOperators} describes the operators used to solve the MIP DSA equations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transport Operators}
-\label{subsub:TransportOperators}
-Shown in Table \ref{tab:mfemFunctions} are the functions within MFEM that integrate and assemble the various components of the transport equation (Equation \ref{eq:FEMDiscretized}) to the linear algebraic system. The functions are displayed along with the general form of their equation and their translation to the applicable component of the transport equation. The last two entries of Table \ref{tab:mfemFunctions} are the interior boundaries using the upstream values (no. 5) and the problem boundary (no. 6). Several of the MFEM equations have coefficients, $\alpha$ and $\beta$, that are required input. For item number 1, using $\alpha=1$ sets the MFEM equation equal to the discretized equation. Similarly, for item number 5 using $\alpha = -1$ and $\beta = 1/2$,
-\begin{flalign}
-\alpha \int_{\partial \mathbb{V}} \vec{\Omega} \vd \left(- \hat{n} \right) \left\{ \psi \right\} w + \beta \int_{\partial \mathbb{V}} \left| \vec{\Omega} \vd \left(- \hat{n} \right) \right| \left[\!\left[\psi \right]\!\right] w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w_{k,i}
-\end{flalign}
+\label{sub:TransportOperators}
+Shown in Table~\ref{tab:mfemFunctions} are the functions within MFEM that integrate and assemble the various operators of the transport equation in \XY\ geometry. These are all available by default in the MFEM distribution. The functions are displayed along with the general form of their equation and their translation to the applicable component of the transport equation. The last two entries of Table~\ref{tab:mfemFunctions} are the interior boundaries using the upstream values (no. 5) and the problem boundary (no. 6). Several of the MFEM equations have coefficients, $\alpha$ and $\beta$, that are required input. 
 
-\noindent where $\left\{\psi \right\} = 1/2 \left(\psi_u + \psi_k \right)$ and $\left[\!\left[ \psi \right]\!\right] = \psi_u - \psi_k$, where $\psi_u$ is the upwind angular flux and $\psi_k$ is the angular flux in cell $k$.
-\begin{multline}
--1 \int_{\partial \mathbb{V}} \left[\vec{\Omega} \vd \left(- \hat{n} \right) \right] \left[\frac{1}{2} \left(\psi_u + \psi_k \right) \right] w + \frac{1}{2} \int_{\partial \mathbb{V}} \left| \vec{\Omega} \vd \left(- \hat{n} \right) \right| \left(\psi_u - \psi_k \right) w \\
-= \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w_{k,i}
-\end{multline}
-\begin{flalign}
-\frac{1}{2} \int_{\partial \mathbb{V}} \left(\vec{\Omega} \vd \hat{n} \right) \left(\psi_u + \psi_k \right) w + \frac{1}{2} \int_{\partial \mathbb{V}} \left| \vec{\Omega} \vd \left(- \hat{n} \right) \right| \left(\psi_u - \psi_k \right) w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w_{k,i}
-\end{flalign}
+The normal vector $\hat{n}$ in MFEM is outward of the upwind mesh surface so a negative was applied to the normal vector to convert it to be the outward normal of the surface of cell $k$ like it has been previously defined in this dissertation.
 
-\noindent For $\vec{\Omega} \vd \hat{n} < 0$ (incident to cell $k$),
-\begin{flalign}
-\frac{1}{2} \int_{\partial \mathbb{V}} \left(\vec{\Omega} \vd \hat{n} \right) \left(\psi_u + \psi_k \right) w - \frac{1}{2} \int_{\partial \mathbb{V}} \left(\vec{\Omega} \vd \hat{n} \right) \left(\psi_u - \psi_k \right) w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w_{k,i} \\
-\frac{1}{2} \int_{\partial \mathbb{V}} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w + \frac{1}{2} \int_{\partial \mathbb{V}} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_k \ w_{k,i}
-\end{flalign}
-
-\noindent The normal vector $\hat{n}$ in MFEM is outward of the upwind mesh surface so a negative was applied to the normal vector to convert it to be the outward normal of the surface of cell $k$ like it has been previously defined in this thesis. Similarly, for item number 6, $\alpha=-1$ and $\beta = -1/2$,
-\begin{flalign}
-\frac{\alpha}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \ \vec{\Omega} \vd \left(- \hat{n} \right) \ w - \beta \int_{\partial \mathbb{V}} \psi_\text{inc} \left| \vec{\Omega} \vd \left(- \hat{n} \right) \right| w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_{\text{inc},k} \ w_{k,i} \\
-- \frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \ \vec{\Omega} \vd \left(- \hat{n} \right) \ w + \frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \left| \vec{\Omega} \vd \left(- \hat{n} \right) \right| w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_{\text{inc},k} \ w_{k,i} \\
-\frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \left(\vec{\Omega} \vd \hat{n} \right) w + \frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \left[\vec{\Omega} \vd \left(- \hat{n} \right) \right] w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_{\text{inc},k} \ w_{k,i} \\
-\frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \left(\vec{\Omega} \vd \hat{n} \right) w + \frac{1}{2} \int_{\partial \mathbb{V}} \psi_\text{inc} \left(\vec{\Omega} \vd \hat{n} \right) w & = \int_{\partial \mathbb{V}_k} \left(\vec{\Omega} \vd \hat{n} \right) \psi_{\text{inc},k} \ w_{k,i}
-\end{flalign}
+In order to perform the spatial integrations with a factor of $r$ we needed to modify the existing MFEM integrators. In general, this required multiplying the integrand by the physical $r$ location. Since we performed an integration by parts on the streaming operator to remove the $r$ from the $r$-derivative term, this greatly simplified our modification of these terms. Future research may require multiplying the basis function by $r$ prior to calculating the derivative at the integration point in order to preserve the conservation form of the \RZ\ transport equation. The operators for the \RZ\ transport equation and their MFEM implementations are shown in Table~\ref{tab:RZmfemFunctions}.
 
 \floatsetup[table]{capposition=bottom}
 \begin{sidewaystable}[!h]
@@ -51,17 +31,19 @@ Shown in Table \ref{tab:mfemFunctions} are the functions within MFEM that integr
 \hline
 \multicolumn{1}{|c}{\textbf{no.}} & \multicolumn{1}{|c}{\textbf{Discretized Equation}} & \multicolumn{1}{|c}{\textbf{MFEM Equation}} & \multicolumn{1}{|c|}{\textbf{MFEM Integrator Function}} \\
 \hline \hline
-1 & $\left(\vec{\Omega} \vd \grad \psi_{j}, v_{i} \right)_{\mathbb{D}_k}$ & $\left(\alpha\  \vec{\Omega} \vd \grad \psi, v \right)_{\mathbb{D}_k}$ & ConvectionIntegrator$\left(\vec{\Omega}, \alpha \right)$ \\\hline
-2 & $\left(\sigma_t\ \psi_j, v_{i} \right)_{\mathbb{D}_k}$ & $\left(\sigma_t\ \psi, v \right)_{\mathbb{D}_k}$ & MassIntegrator$\left(\sigma_t \right)$ \\\hline
-3 & $\left(\sigma_s\ \phi, v_{i} \right)_{\mathbb{D}_k}$ & $\left(\varphi, v \right)_{\mathbb{D}_k}$ & DomainLFIntegrator$\left(\varphi \right)$ \\\hline
-4 & $\left(S_0, v_{i} \right)_{\mathbb{D}_k}$ & $\left(S_0, v \right)_{\mathbb{D}_k}$ & DomainLFIntegrator$\left(S_0 \right)$ \\\hline
-5 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathbb{D}_k}$ & \begin{tabular}{cc} $\alpha \left(\vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathbb{D}_k}$ \\
-$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathbb{D}_k}$ \end{tabular} & DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right) $ \\\hline
-6 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_\text{inc}, v_{i} \right)_{\partial \mathbb{D}_k}$ & \begin{tabular}{cc} $\frac{\alpha}{2} \left(\psi_{inc}\ \vec{\Omega} \vd \hat{n}, v \right)_{\partial \mathbb{D}_k}$ \\
-$- \beta \left(\psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\partial \mathbb{D}_k}$ \end{tabular} & BoundaryFlowIntegrator$\left(\psi_{inc}, \vec{\Omega}, \alpha, \beta \right)$ \\\hline
+1 & $\left(\vec{\Omega} \vd \grad \psi_{j}, v_{i} \right)_{\mathcal{D}_k}$ & $\left(\alpha\  \vec{\Omega} \vd \grad \psi, v \right)_{\mathcal{D}_k}$ & ConvectionIntegrator$\left(\vec{\Omega}, \alpha \right)$ \\\hline
+2 & $\left(\sigma_t\ \psi_j, v_{i} \right)_{\mathcal{D}_k}$ & $\left(\sigma_t\ \psi, v \right)_{\mathcal{D}_k}$ & MassIntegrator$\left(\sigma_t \right)$ \\\hline
+3 & $\left(\sigma_s\ \phi, v_{i} \right)_{\mathcal{D}_k}$ & $\left(\varphi, v \right)_{\mathcal{D}_k}$ & DomainLFIntegrator$\left(\varphi \right)$ \\\hline
+4 & $\left(S_0, v_{i} \right)_{\mathcal{D}_k}$ & $\left(S_0, v \right)_{\mathcal{D}_k}$ & DomainLFIntegrator$\left(S_0 \right)$ \\\hline
+5 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathcal{D}_k^e}$ & \begin{tabular}{cc} $\alpha \left(\vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^e}$ \\
+$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^e}$ \end{tabular} & DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right) $ \\\hline
+6 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathcal{D}_k^b}$ & \begin{tabular}{cc} $\alpha \left(\vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^b}$ \\
+$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^b}$ \end{tabular} & DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right) $ \\\hline
+7 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_\text{inc}, v_{i} \right)_{\partial \mathcal{D}_k}$ & \begin{tabular}{cc} $\frac{\alpha}{2} \left(\psi_{inc}\ \vec{\Omega} \vd \hat{n}, v \right)_{\partial \mathcal{D}_k}$ \\
+$- \beta \left(\psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\partial \mathcal{D}_k}$ \end{tabular} & BoundaryFlowIntegrator$\left(\psi_{inc}, \vec{\Omega}, \alpha, \beta \right)$ \\\hline
 \end{tabular}}
 \end{threeparttable}
-\caption{MFEM PDE function calls where the arguments have been dropped (see Equations \ref{eq:FEMDiscretized} and \ref{eq:FEMBoundaryCondition} for these details).}
+\caption{MFEM transport operator function calls where the arguments have been dropped.}
 \label{tab:mfemFunctions}
 \end{sidewaystable}
 \floatsetup[table]{capposition=top}
@@ -75,29 +57,26 @@ $- \beta \left(\psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\p
 \hline
 \multicolumn{1}{|c}{\textbf{no.}} & \multicolumn{1}{|c}{\textbf{Discretized Equation}} & \multicolumn{1}{|c}{\textbf{MFEM Equation}} & \multicolumn{1}{|c|}{\textbf{MFEM Integrator Function}} \\
 \hline \hline
-& $\left(r\ \vec{\Omega} \vd \grad \psi_j, v_{i} \right)_{\mathbb{D}_k}$ & $\left(r\ \alpha\  \vec{\Omega} \vd \grad \psi, v \right)_{\mathbb{D}_k}$ & RZConvectionIntegrator$\left(\vec{\Omega}, \alpha \right)$ \tnote{$\dagger$} \\\hline
-& $\left(r\ \vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathbb{D}_k}$ & \begin{tabular}{cc} $\alpha \left(r\ \vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathbb{D}_k}$ \\
-$+ \beta \left(r \left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathbb{D}_k}$ \end{tabular} & RZDGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right)$ \tnote{$\dagger$} \\\hline
-& $\left(\mu_{n,m} \psi_j, v_i \right)_{\mathbb{D}_k}$ && MassIntegrator($\mu_{n,m}$) \\\hline
-& $\left(\frac{\alpha_{m+1/2}{n}}{\tau_{n,m} w_{n,m}} \psi_j, v_i \right)_{\mathbb{D}_k}$ && MassIntegrator($\frac{\alpha_{m+1/2}{n}}{\tau_{n,m} w_{n,m}}$) \\\hline
-& $\left(r\ \sigma_t\ \psi_j, v_{i} \right)_{\mathbb{D}_k}$ & $\left(r\ \sigma_t\ \psi, v \right)_{\mathbb{D}_k}$ & RZMassIntegrator$\left(\sigma_t \right)$ \tnote{$\dagger$} \\\hline
-& $\frac{1}{4 \pi} \left(r\ \sigma_s\ \phi, v_{i} \right)_{\mathbb{D}_k}$ & $\left(r\ \varphi, v \right)_{\mathbb{D}_k}$ & RZDomainLFIntegrator$\left(\frac{1}{4 \pi} \sigma_s\ \phi \right)$ \tnote{$\dagger$} \\\hline
-& $\frac{1}{4 \pi} \left(r\ S_0, v_{i} \right)_{\mathbb{D}_k}$ & $\left(r\ S_0, v \right)_{\mathbb{D}_k}$ & RZDomainLFIntegrator$\left(\frac{S_0}{4 \pi} \right)$ \tnote{$\dagger$} \\\hline
-& $\left(r\ \vec{\Omega} \vd \hat{n}\ \psi_\text{inc}, v_{i} \right)_{\partial \mathbb{D}_k}$ & \begin{tabular}{cc} $\frac{\alpha}{2} \left(r\ \psi_{inc}\ \vec{\Omega} \vd \hat{n}, v \right)_{\partial \mathbb{D}_k}$ \\
-$- \beta \left(r\ \psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\partial \mathbb{D}_k}$ \end{tabular} & RZBoundaryFlowIntegrator$\left(\psi_{inc}, \vec{\Omega}, \alpha, \beta \right)$ \tnote{$\dagger$} \\\hline
+1 & \begin{tabular}{cc} $\left(r\ \mu_{n,m} \vd \partial_r \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k}$ \\ $\left(r\ \xi_{m} \vd \partial_z \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k}$ \end{tabular} & $\left(r\ \alpha\  \vec{\Omega} \vd \grad \psi, v \right)_{\mathcal{D}_k}$ & RZConvectionIntegrator$\left(\vec{\Omega}, \alpha \right)$ \\\hline
+2 & \begin{tabular}{cc} $\left(r\ \mu_{n,m} \vd \hat{n}\ \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k^e}$ \\ $\left(r\ \xi_{m} \vd \hat{n}\ \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k^e}$ \end{tabular} & \begin{tabular}{cc} $\alpha \left(r\ \vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^e}$ \\
+$+ \beta \left(r \left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^e}$ \end{tabular} & RZDGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right)$ \\\hline
+3 & \begin{tabular}{cc} $\left(r\ \mu_{n,m} \vd \hat{n}\ \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k^b}$ \\ $\left(r\ \xi_{m} \vd \hat{n}\ \psi_{n,m,j}, v_{i} \right)_{\mathcal{D}_k^b}$ \end{tabular} & \begin{tabular}{cc} $\alpha \left(r\ \vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^b}$ \\
+$+ \beta \left(r \left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^b}$ \end{tabular} & RZDGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right)$ \\\hline
+4 & $\left(\mu_{n,m} \psi_j, v_i \right)_{\mathcal{D}_k}$ & $\left(\mu_{n,m} \psi, v \right)_{\mathcal{D}_k}$ & MassIntegrator($\mu_{n,m}$) \\\hline
+5 & $\left(\frac{\alpha_{m+1/2}{n}}{\tau_{n,m} w_{n,m}} \psi_j, v_i \right)_{\mathcal{D}_k}$ & $\left(\frac{\alpha_{m+1/2}{n}}{\tau_{n,m} w_{n,m}} \psi, v \right)_{\mathcal{D}_k}$ & MassIntegrator($\frac{\alpha_{m+1/2}{n}}{\tau_{n,m} w_{n,m}}$) \\\hline
+6 & $\left(r\ \sigma_t\ \psi_j, v_{i} \right)_{\mathcal{D}_k}$ & $\left(r\ \sigma_t\ \psi, v \right)_{\mathcal{D}_k}$ & RZMassIntegrator$\left(\sigma_t \right)$ \\\hline
+7 & $\frac{1}{4 \pi} \left(r\ \sigma_s\ \phi, v_{i} \right)_{\mathcal{D}_k}$ & $\left(r\ \varphi, v \right)_{\mathcal{D}_k}$ & RZDomainLFIntegrator$\left(\frac{1}{4 \pi} \sigma_s\ \phi \right)$ \\\hline
+8 & $\frac{1}{4 \pi} \left(r\ S_0, v_{i} \right)_{\mathcal{D}_k}$ & $\left(r\ S_0, v \right)_{\mathcal{D}_k}$ & RZDomainLFIntegrator$\left(\frac{S_0}{4 \pi} \right)$ \\\hline
+9 & $\left(r\ \vec{\Omega} \vd \hat{n}\ \psi_\text{inc}, v_{i} \right)_{\partial \mathcal{D}_k}$ & \begin{tabular}{cc} $\frac{\alpha}{2} \left(r\ \psi_{inc}\ \vec{\Omega} \vd \hat{n}, v \right)_{\partial \mathcal{D}_k}$ \\
+$- \beta \left(r\ \psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\partial \mathcal{D}_k}$ \end{tabular} & RZBoundaryFlowIntegrator$\left(\psi_{inc}, \vec{\Omega}, \alpha, \beta \right)$ \\\hline
 \end{tabular}}
-\begin{tablenotes}
-\item[$\dagger$] {Modified MFEM operator}
-\end{tablenotes}
 \end{threeparttable}
-\caption{MFEM PDE function calls where the arguments have been dropped (see Equations \ref{eq:FEMDiscretized} and \ref{eq:FEMBoundaryCondition} for these details).}
-\label{tab:mfemFunctions}
+\caption{MFEM \RZ\ transport operator function calls where the arguments have been dropped.}
+\label{tab:RZmfemFunctions}
 \end{sidewaystable}
 \floatsetup[table]{capposition=top}
 
-MFEM automatically determines the degree of numerical integration to integrate each of the integrals of Table \ref{tab:mfemFunctions}. These default integration orders are shown in Table \ref{tab:integrationOrders}. It was discovered that integrating all of the terms consistently was important for numeric conservation. For simplicity, each of the integration orders were set to the largest of the default integration orders.
-%Since these default integration orders differ between each integrator function, manual input was required to equate them and force an overall balance in the transport discretization, to a prescribed tolerance. While ``under integrating" each integral by not having a large enough integration order will reduce accuracy, over integrating will increase computational time. As this optimization is not a current focus of this research, the largest of the default integration orders was forced into the remaining integrators to ensure accuracy.
-Table \ref{tab:integrationOrders} shows that the integration order is the same for all of the integrators except DomainLFIntegrator, which is the largest integration order only if $p = 0$ (piecewise constant). While the results presented in this thesis do not consider the circumstance of piecewise constant finite elements, this integration order was included in the code for future use.
+MFEM has default settings for determining the degree of numerical integration to integrate each of the integrals of Tables~\ref{tab:mfemFunctions}~and~\ref{tab:RZmfemFunctions}. These default integration orders are shown in Table~\ref{tab:integrationOrders}. It was discovered that integrating all of the terms consistently was important for numerical conservation. For simplicity, each of the integration orders were set to the largest of the default integration orders. Table~\ref{tab:integrationOrders} shows that the integration order is the same for all of the integrators except DomainLFIntegrator, which is the largest integration order only if $p = 0$ (piecewise constant). While the results presented in this dissertation do not consider the circumstance of piecewise constant finite elements, this integration order was included in the code for future use.
 
 \begin{table}[!h]
 \centering
@@ -106,30 +85,27 @@ Table \ref{tab:integrationOrders} shows that the integration order is the same f
 \hline
 \multicolumn{1}{|c}{\textbf{MFEM Integrator}} & \multicolumn{1}{|c|}{\textbf{Default Integration Order}} \\
 \hline \hline
-DGTraceIntegrator & $m \cdot d + 2 \cdot p - 1$ \\
+DGTraceIntegrator & $g \cdot d + 2 \cdot p - 1$ \\
 \hline
-ConvectionIntegrator & $m \cdot d + 2 \cdot p - 1$ \\
+ConvectionIntegrator & $g \cdot d + 2 \cdot p - 1$ \\
 \hline
-MassIntegrator & $m \cdot d + 2 \cdot p - 1$ \\
+MassIntegrator & $g \cdot d + 2 \cdot p - 1$ \\
 \hline
-DomainLFIntegrator & $2 \cdot m$ \\
+DomainLFIntegrator & $2 \cdot g$ \\
 \hline
-BoundaryFlowIntegrator & $m \cdot d + 2 \cdot p - 1$ \\
+BoundaryFlowIntegrator & $g \cdot d + 2 \cdot p - 1$ \\
 \hline
 \end{tabular}}
-\caption{MFEM default integration orders for transport operators. The notation for the finite element order is $p$, mesh order is $m$, and problem dimension is $d$.}
+\caption{MFEM default integration orders for transport operators. The notation for the finite element order is $p$, mesh order is $g$, and problem spatial dimension is $d$.}
 \label{tab:integrationOrders}
 \end{table}
 
-MFEM is equipped to visualize data using various tools requiring additional user input. The images presented in this thesis were produced with VisIt, an open source visualization analysis tool \cite{VisIt_Web}.
-%Alternative visualization was done with GLVis \cite{GLVis_Web}.
-
-\FloatBarrier
+MFEM is equipped to visualize data using various tools requiring additional user input. The images presented in this dissertation were produced with VisIt, an open source visualization analysis tool~\cite{VisIt_Web}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{MIP DSA Operators}
-\label{subsub:MIPDSAOperators}
-There are some specific function calls to MFEM for the diffusion equation that are listed in Table \ref{tab:diffusionIntegrators}. Items 3 and 4 have a $\sigma_D$ value that controls the DG method to be used, where $\sigma_D = -1$ is for the symmetric interior penalty method. Item 6 is for the Robin boundary condition described by Equation \ref{eq:RobinBC}. Item 4 is the function that will need to be modified to adapt Methods 1 and 2 (this function is not used for Method 3).
+\subsection{MIP DSA Operators}
+\label{sub:MIPDSAOperators}
+There are some specific function calls to MFEM for the diffusion equation that are listed in Table~\ref{tab:diffusionIntegrators}. Items 3 and 4 have a $\sigma_D$ value that controls the DG method to be used, where $\sigma_D = -1$ is for the symmetric interior penalty method. Item 6 is for the Robin boundary condition described by Equation~\ref{eq:RobinBC}.
 
 \floatsetup[table]{capposition=bottom}
 \begin{sidewaystable}[!h]
@@ -139,24 +115,20 @@ There are some specific function calls to MFEM for the diffusion equation that a
 {\renewcommand{\arraystretch}{2}
 \begin{tabular}{|c|c|c|c|}
 \hline
-no. & FEM Equations \ref{eq:DSALHS} \& \ref{eq:DSARHS} & MFEM Equation & User Input \\\hline
-1 & $\left(\sigma_a \phi, w \right)_\mathbb{V}$ & $\left(\sigma_a \phi, w \right)_\mathbb{V}$ & MassIntegrator$\left(\sigma_a \right)$ \\\hline
-2 & $\left(D \grad \phi, \grad w \right)_\mathbb{V}$ & $\left(D \grad \phi, \grad w \right)_\mathbb{V}$ & DiffusionIntegrator$\left(D \right)$ \\\hline
-3 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \\ $+ \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n w \right\}\!\!\right\} \right)_{\partial \mathbb{V}^i}$ \\ $+ \left(\kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad w \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathbb{V}^i}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^i}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
-4 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \\ $- \frac{1}{2} \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n w \right\}\!\!\right\} \right)_{\partial \mathbb{V}^d}$ \\ $- \frac{1}{2} \left(\kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad w \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathbb{V}^d}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathbb{V}^d}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
-5 & $ \left(Q_0, w \right)_\mathbb{V}$  & $ \left(Q_0, w \right)_\mathbb{V}$ & DomainLFIntegrator$ \left(Q_0 \right)$ \\\hline
-6 & $\left(\frac{1}{2} \phi, w \right)_{\partial \mathbb{V}^d}$ & $\left(\frac{1}{2} \phi, w \right)_{\partial \mathbb{V}^d}$ & BoundaryMassIntegrator$\left(\frac{1}{2} \right)$ \\\hline
+no. & FEM Equations & MFEM Equation & User Input \\\hline
+1 & $\left(\sigma_a \phi, v \right)_\mathcal{D}$ & $\left(\sigma_a \phi, v \right)_\mathcal{D}$ & MassIntegrator$\left(\sigma_a \right)$ \\\hline
+2 & $\left(D \grad \phi, \grad v \right)_\mathcal{D}$ & $\left(D \grad \phi, \grad v \right)_\mathcal{D}$ & DiffusionIntegrator$\left(D \right)$ \\\hline
+3 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}$ \\ $+ \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n v \right\}\!\!\right\} \right)_{\partial \mathcal{D}^e}$ \\ $+ \left(\kappa_e \llbracket \phi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad v \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathcal{D}^e}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
+4 & \begin{tabular}{c} $\left(\left\{\!\!\{D \partial_n \phi \right\}\!\!\}, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^b}$ \\ $- \frac{1}{2} \left(\llbracket \phi \rrbracket, \left\{\!\!\left\{ D \partial_n v \right\}\!\!\right\} \right)_{\partial \mathcal{D}^b}$ \\ $- \frac{1}{2} \left(\kappa_e \llbracket \phi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^b}$ \end{tabular} & \begin{tabular}{c} $\left(\left\{\!\!\{D \grad \phi \vd \hat{n} \right\}\!\!\}, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^b}$ \\ $+ \sigma_D \left(\llbracket \phi \rrbracket, \left\{\!\!\{D \grad v \vd \hat{n} \right\}\!\!\} \right)_{\partial \mathcal{D}^b}$ \\ $+ \kappa \left(\left\{\!\!\!\left\{\frac{D}{h_{\bot}} \right\}\!\!\!\right\} \llbracket \phi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^b}$ \end{tabular} & DGDiffusionIntegrator$ \left( D, \sigma_D, \kappa \right) $ \\\hline
+5 & $ \left(\sigma_s \left[\phi^{(\ell+1/2)} - \phi^{(\ell)} \right], v \right)_\mathcal{D}$  & $ \left(Q_0, v \right)_\mathcal{D}$ & DomainLFIntegrator$ \left(Q_0 \right)$ \\\hline
+6 & $\left(\frac{1}{2} \phi, v \right)_{\partial \mathcal{D}^b}$ & $\left(\frac{1}{2} \phi, v \right)_{\partial \mathcal{D}^b}$ & BoundaryMassIntegrator$\left(\frac{1}{2} \right)$ \\\hline
 \end{tabular}}
-\begin{tablenotes}
-\item[$\dagger$]{$\partial \mathbb{V}^i$ denotes an internal edge}
-\item[$\ddagger$]{$\partial \mathbb{V}^d$ denotes a boundary edge}
-\end{tablenotes}
 \end{threeparttable}
 \label{tab:diffusionIntegrators}
 \end{sidewaystable}
 \floatsetup[table]{capposition=top}
 
-\FloatBarrier
+\begin{comment}
 
 \begin{figure}[!h]
 \begin{tikzpicture}[node distance=2cm]
@@ -199,7 +171,7 @@ no. & FEM Equations \ref{eq:DSALHS} \& \ref{eq:DSARHS} & MFEM Equation & User In
 \label{fig:BroomFlowDiagram}
 \end{figure}
 
-\FloatBarrier
+\end{comment}
 
 
 

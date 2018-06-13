@@ -9,32 +9,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Diffusion Synthetic Acceleration}
 \label{sec:DSA}
-{\color{red}COPIED FROM ANS TRANSACTION}
-{\color{blue}
-Radiation transport is integral to multiphysics applications such as inertial confinement fusion and astrophysics. Materials in these problems can be exceptionally optically thick and diffusive. A transport solver must be capable of accurate and efficient solutions to such problems. Previously, Woods et al. \cite{WoodsHoDgfemXyCurved} established a proof-of-concept for high order (HO) discontinuous Galerkin finite element (DGFEM) transport on meshes with curved surfaces. They numerically demonstrated the spatial convergence is order $p+1$, as expected~\cite{LasaintFEM}, where $p$ is the finite element polynomial order.
+Materials in inertial confinement fusion and astrophysics applications can be exceptionally optically thick and diffusive. A transport solver should be capable of performing accurate and efficient calculations on such problems. We present here an extension of Woods et al.~\cite{WoodsHoDgfemXyCurved} that demonstrates a rapidly-convergent iterative solver for the transport equation spatially discretized with the high-order (HO) discontinuous finite element method (DFEM).
 
-We present here an extension of this work that demonstrates a rapidly-convergent iterative solver for the FEM transport equations. It is necessary that an acceleration scheme is effective using HO finite elements. We use the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) established by Wang and Ragusa \cite{WangRagusaDSA}, which was demonstrated to be effective for HO DGFEM. The partially consistent MIP DSA equations stem from the symmetric interior penalty (IP) derivation of the diffusion equation. The IP method is not stable for optically thick cells so it was combined with the diffusion conforming form (DCF), a spatially discretized diffusion equation derived from the spatially discretized \SN\ equations that is not stable for intermediate or low optical thicknesses. The MIP equations adapt a ``switch'' to the IP method in optically thinner regions and the DCF method in optically thicker regions. Wang and Ragusa's Fourier analysis demonstrated the effectiveness of this DSA scheme and was corroberated their numerical results. Our previous work implemented this method, further corroberating the literature, and additionally demonstrated similar behavior on meshes with curved surfaces~\cite{WoodsDSA}.
+For these optically thick and diffusive media, the SI method (Equations~\ref{eqs:SourceIteration}) can converge arbitrarily slowly resulting in impractical computational times. The diffusion equation can resolve solutions for these problems but is only accurate far from highly absorbing regions, material discontinuities, and void regions, including problem boundaries. The transport equation can resolve a solution in all of these regions. So, in order to achieve a transport quality solution, we must accelerate the source iteration scheme.
 
-Although Wang and Ragusa proposed true vacuum boundary conditions for the MIP DSA equation, their finite element discretization implemented homogeneous Dirichlet boundary conditions on the problem boundaries. The zero incident current is the true vacuum boundary condition for the diffusion equation~\cite{AdamsDSADFEM}. It differs from the homogeneous Dirichlet boundary condition in that it allows the DSA solution to be nonzero on the boundary, thereby allowing a nonzero correction to the scalar flux. The present work derives and implements homogeneous Robin boundary conditions on the problem boundaries. We present our initial results demonstrating the behavior of the spectral radii for the newly implemented boundary condition.
+Several acceleration schemes are presented in Section~\ref{sec:SourceIterationAccelerationIntro}. Here, we discuss the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) equations introduced by Wang and Ragusa~\cite{WangRagusaDSA}. It is necessary that an acceleration scheme is effective using HO DFEM. The partially consistent MIP DSA equations stem from the symmetric interior penalty (IP) derivation of the diffusion equation. The IP method is not stable for optically thick mesh zones so it was combined with the diffusion conforming form (DCF), a spatially discretized diffusion equation derived from the spatially discretized \SN\ equations that is not stable for intermediate or low optical thicknesses. The MIP equations adapt a ``switch'' between the IP method for optically thin regions and the DCF method for optically thick regions. Wang and Ragusa's Fourier analysis demonstrated the effectiveness of this DSA scheme and was corroborated by their numerical results. Previous work implemented this method, further corroborating the literature, and additionally demonstrated similar behavior on meshes with curved surfaces~\cite{WoodsDSA}.
 
-Previous literature has reported on some of the sensitivities that affect the spectral radius of DSA schemes: 
-%aspect ratios \cite{AdamsDSADFEM, TurcksinDiscontinuousDSA}, angular quadrature \cite{AdamsDSADFEM, TurcksinDiscontinuousDSA}, 
-polynomial order \cite{WangRagusaDSA, WoodsDSA}, and scattering ratios \cite{WangRagusaDSA, WoodsDSA, WareingDSADFEM}. Presently, we focus on the sensitivity of the spectral radius to the finite element order and the constant $C$ that arises in the stabilization parameter, for varying cell thicknesses.
+Although Wang and Ragusa proposed true vacuum boundary conditions for the MIP DSA equation, their finite element discretization implemented homogeneous Dirichlet boundary conditions on the problem boundaries. The zero incident current is the true vacuum boundary condition for the diffusion equation~\cite{AdamsDSADFEM}. It differs from the homogeneous Dirichlet boundary condition in that it allows the DSA solution to be nonzero on the boundary, thereby allowing a nonzero correction to the scalar flux. The present work derives and implements homogeneous Robin boundary conditions on the problem boundaries. We present the initial results demonstrating the behavior of the spectral radii for the newly implemented boundary condition.
 
-We employ the Modular Finite Element Methods (MFEM)~\cite{MFEM_Web} package, developed at Lawrence Livermore National Laboratory, to generate the linear algebraic system of equations for each angle in the discrete ordinates quadrature set, and use UMFPack~\cite{DavisUMFPack} to solve this system of equations.
-}
+We consider the effects of several parameters to the spectral radius, which is the measure of the convergence rate during the source iteration. Previous literature has reported on some of the sensitivities that impact the spectral radius of DSA schemes: aspect ratios \cite{AdamsDSADFEM,TurcksinDiscontinuousDSA}, angular quadrature \cite{AdamsDSADFEM,TurcksinDiscontinuousDSA}, polynomial order \cite{WoodsDSA,WangRagusaDSA}, and scattering ratios \cite{WoodsDSA,WangRagusaDSA,WareingDSADFEM}. Presently, we focus on the sensitivity of the spectral radius to the finite element order and the constant $C$ that arises in the stabilization parameter, for varying cell thicknesses.
 
 The general DSA algorithm is
 \begin{subequations}
 \begin{flalign}
-\vec{\Omega} \vd \grad \psi_m^{(\ell+1/2)} + \sigma_t \psi_m^{(\ell+1/2)} & = \frac{1}{4 \pi} \left(\sigma_s \phi^{(\ell)} + S_0 \right) \label{eq:DSASITransport} \\
-\phi^{(\ell+1/2)} & = \sum_m w_m \psi_m^{(\ell+1/2)} \label{eq:DSASIPhiHalf} \\
+\vec{\Omega} \vd \grad \psi_m^{(\ell+1/2)} + \sigma_t \psi_m^{(\ell+1/2)} & = \frac{1}{4 \pi} \left(\sigma_s \phi^{(\ell)} + S_0 \right) \tag{\ref{eq:DSASITransport}} \\
+\phi^{(\ell+1/2)} & = \sum_m w_m \psi_m^{(\ell+1/2)} \tag{\ref{eq:DSASIPhiHalf}} \\
 -\grad \vd D \grad \varphi^{(\ell+1/2)} + \sigma_a \varphi^{(\ell+1/2)} & = \sigma_s \left(\phi^{(\ell+1/2)} - \phi^{(\ell)} \right) \label{eq:DSASIEquation} \\
 \phi^{(\ell+1)} & = \phi^{(\ell+1/2)} + \varphi^{(\ell+1/2)} \label{eq:DSASIPhiEnd}
 \end{flalign}
+\label{eqs:DSAAlgorithm}
 \end{subequations}
 
-\noindent where $\phi^{(\ell+1/2)}$ is the radiation transport scalar flux solution at iteration $(\ell+1/2)$ prior to the DSA solve. Specifically, we solve for Equation~\ref{eq:DSASITransport} for each of the angular fluxes, $\psi^{(\ell+1/2)}_m$ at a half-step. Then, we perform a weighted summation of the angular fluxes to obtain the scalar flux at the half step, $\phi^{(\ell+1/2)}$. For comparison, the unaccelerated source iteration method can then be written $\phi^{(\ell+1)} = \phi^{(\ell+1/2)}$. The DSA method then solves a diffusion equation with a modified source. Equation~\ref{eq:DSASIEquation} is called the DSA equation. Finally, the summation of the solution to the DSA equation and the scalar flux at the half step becomes the scalar flux solution at the end of the iteration. This iterative process continues until the convergence criteria
+\noindent where $\phi^{(\ell+1/2)}$ is the radiation transport scalar flux solution at iteration $(\ell+1/2)$ prior to the DSA solve. Specifically, we solve for Equation~\ref{eq:DSASITransport} for each of the angular fluxes, $\psi^{(\ell+1/2)}_m$ at a half-step. Then, we perform a weighted summation of the angular fluxes to obtain the scalar flux at the half step, $\phi^{(\ell+1/2)}$. For comparison, the unaccelerated source iteration method can then be written $\phi^{(\ell+1)} = \phi^{(\ell+1/2)}$. The DSA method then solves the DSA equation (Equation~\ref{eq:DSASIEquation}), a diffusion equation with a modified source. Finally, the summation of the solution to the DSA equation and the scalar flux at the half step becomes the scalar flux solution at the end of the iteration. This iterative process continues until the convergence criteria
 \begin{equation}
 \norm{\phi^{\left(\ell+1 \right)} - \phi^{\left(\ell \right)}}_\infty < \varepsilon_\text{conv} \left(1 - \rho \right) \norm{\phi^{\ell+1}}_\infty,
 \label{eq:ModifiedConvergenceCriteria}
@@ -42,12 +38,12 @@ The general DSA algorithm is
 
 \noindent is met, where $\varepsilon_\text{conv}$ is a small number. The solution to Equation~\ref{eq:DSASIEquation} is the context of this section.
 
-The remainder of this section is layed out as follows. In Section~\ref{sec:MIPDSA}, we introduce and discuss the MIP DSA equations and perform a sensitivity study on the spectral radius. In Section~\ref{sec:MIPDSARobinBCs}, we derive and integrate the Robin boundary condition into the MIP DSA equations. We also perform sensitivity studies using the Robin boundary condition implementation to evaluate the performance.
+The remainder of this section is organized as follows. In Section~\ref{sec:MIPDSA}, we introduce and discuss the MIP DSA equations and perform a sensitivity study on the spectral radius. In Section~\ref{sec:MIPDSARobinBCs}, we derive and integrate the Robin boundary condition into the MIP DSA equations where we also perform sensitivity studies using the Robin boundary condition implementation. Finally, we make concluding remarks in Section~\ref{sec:DSAConclusions}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Modified Interior Penalty DSA}
 \label{sec:MIPDSA}
-The discretization of the DSA equation (Eq.~\ref{eq:DSASIEquation}) is of particular importance. A new spatial discretization method was introduced by Wang and Ragusa~\cite{WangRagusaDSA} called the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) method. They demonstrated it's effectiveness using high-order finite elements (up to $4^\text{th}$-order), hence the applicability in our context.
+The discretization of the DSA equation (Eq.~\ref{eq:DSASIEquation}) is of particular importance. A new spatial discretization method was introduced by Wang and Ragusa~\cite{WangRagusaDSA} called the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) method. They demonstrated it's effectiveness using high-order finite elements (up to $4^\text{th}$-order), hence the applicability in the present context.
 
 The bilinear form of the MIP DSA equations is
 \begin{subequations}
@@ -99,15 +95,15 @@ c \left( p \right) \frac{D}{h_{\bot}}, & \text{on boundary surfaces, i.e., } \pa
 c \left( p \right) & = C p \left( p +1 \right). \label{eq:cp}
 \end{flalign}
 
-\noindent The value $h_\perp^\pm$ is the perpendicular cell size on either side of the cell surface, $p$ is the finite element order, $C$ is an arbitrary constant that is investigated in this research. Equation~\ref{eq:MIP} contains a ``switch'' between the IP and DCF penalty coefficients, $\kappa_e^{IP}$ and $1/4$, respectively. Equations~\ref{eq:kappaIP} and~\ref{eq:cp} determine when the switch occurs and is largely dependent upon problem constraints.
+\noindent The value $h_\perp^\pm$ is the perpendicular cell size on either side of the cell surface, $p$ is the finite element order, $C$ is an arbitrary constant that is investigated in this research. Equation~\ref{eq:MIP} contains a ``switch'' between the IP and DCF penalty coefficients, $\kappa_e^{IP}$ and $1/4$, respectively. Equations~\ref{eq:kappaIP} and~\ref{eq:cp} determine when the switch occurs and are largely dependent upon problem constraints.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Spectral Radius Sensitivity to Constant $C$}
 Previous researchers used values for $C$ arbitrarily. Wang and Ragusa \cite{WangRagusaDSA} used $C = 2$ and Turcksin and Ragusa \cite{TurcksinDiscontinuousDSA} used $C = 4$. Here, we perform a study to assess the sensitivity of the spectral radius to changes in the constant $C$ (see Eq.~\ref{eq:cp}) for various cell thicknesses, and finite element orders. 
 
-Our test problems are the same as the ones used by Wang and Ragusa~\cite{WangRagusaDSA} for comparison. They are homogeneous with vacuum boundaries, have a scattering ratio $c=0.9999$, and an isotropic volumetric source $S_0 = 1$ cm$^{-3}$ s$^{-1}$. The mesh is a 10 cm by 10 cm quadrilateral grid uniformly divided into 100 zones, and we use $S_8$ level symmetric angular quadrature.  The total opacity $\sigma_t$ is chosen at runtime for the appropriate optical thickness. For cell thicknesses less than 1 mfp, $\sigma_t$ is set to 1 cm$^{-1}$ and the mesh is incrementally refined to make each zone less optically thick.
+These test problems are the same as the ones used by Wang and Ragusa~\cite{WangRagusaDSA} for comparison. They are homogeneous with vacuum boundaries, have a scattering ratio $c=0.9999$, and an isotropic volumetric source $S_0 = 1$ cm$^{-3}$ s$^{-1}$. The mesh is a 10 cm by 10 cm quadrilateral grid uniformly divided into 100 zones, and we use $S_8$ level symmetric angular quadrature.  The total opacity $\sigma_t$ is chosen at run-time for the appropriate optical thickness. For cell thicknesses less than 1 mfp, $\sigma_t$ is set to 1 cm$^{-1}$ and the mesh is incrementally refined to make each zone less optically thick.
 
-Figure~\ref{fig:MIPHOC2Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=2$. We immediately notice peaks approaching $\rho = 0.9$, where the method performs the ``switch''. The IP method works well in the optically thin region (left-hand-side of the figure) and the DCF method works well in the intermediate and optically thick regions (right-hand-side of the figure). This result is similar to numerical results of Wang and Ragusa~\cite{WangRagusaDSA}. There is little sensitivity of finite element order in the very optically thin and optically thick regions. However, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
+Figure~\ref{fig:MIPHOC2Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=2$. We observe peaks approaching $\rho = 0.9$, where the method performs the ``switch''. The IP method works well in the optically thin region (smaller cell sizes) and the DCF method works well in the intermediate and optically thick regions (larger cell sizes). This result is similar to numerical results of Wang and Ragusa~\cite{WangRagusaDSA}. There is little sensitivity of finite element order in the very optically thin and optically thick regions. However, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
 
 \begin{figure}[!hbt]
 \centering
@@ -138,6 +134,8 @@ Figure~\ref{fig:MIPHOC2Ortho} shows the spectral radius of various finite elemen
 \caption{Spectral radius data for varying $p$ with $C=2$ on an orthogonal mesh with homogeneous Dirichlet boundary conditions in the DSA solve; plot reproduced from Woods et al.~\cite{WoodsDSA}.}
 \label{fig:MIPHOC2Ortho}
 \end{figure}
+
+\FloatBarrier
 
 Figure~\ref{fig:MIPHOC4Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$. We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} are significantly diminished. The value of $C$ moved the ``switch'' toward the optically thick region, thereby not forcing the DCF method to operate in the optically thin regime. The larger value of $C$ also impacts the IP method spectral radius, resulting in a slight rise (of nearly $0.1$ for higher finite element orders) before the switch to the DCF method. Again, there is little sensitivity of finite element order in the very optically thin and optically thick regions. Still, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
 
@@ -171,6 +169,8 @@ Figure~\ref{fig:MIPHOC4Ortho} shows the spectral radius of various finite elemen
 \label{fig:MIPHOC4Ortho}
 \end{figure}
 
+\FloatBarrier
+
 Figure~\ref{fig:MIPHOC6Ortho} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=6$. We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} remain significantly diminished like with $C=4$. The value of $C$ moved the ``switch'' further toward the optically thick region, thereby requiring the DCF method to operate even less in the optically thin regime. The larger value of $C$ impacts the IP method spectral radius again, resulting in a slight rise of over $0.1$ (for higher finite element orders) before the switch to the DCF method. Again, there is little sensitivity of finite element order in the very optically thin and optically thick regions. Still, the intermediate optical thickness range has a strong dependence on the choice of the finite element order. In this range, the spectral radius is generally smaller for lower finite element orders.
 
 \begin{figure}[!hbt]
@@ -202,6 +202,8 @@ Figure~\ref{fig:MIPHOC6Ortho} shows the spectral radius of various finite elemen
 \caption{Spectral radius data for varying $p$ with $C=6$ on an orthogonal mesh with homogeneous Dirichlet boundary conditions in the DSA solve; plot reproduced from Woods et al.~\cite{WoodsDSA}.}
 \label{fig:MIPHOC6Ortho}
 \end{figure}
+
+\FloatBarrier
 
 In all cases $C=\{2,4,6\}$, the spectral radius was less than one, indicating these methods are unconditionally converging. We observed that larger values of $C$ reduce the spectral radius in the intermediate range by mitigating the observable peaks. However, the larger $C$ values increased the spectral radius toward the optically thin region by introducing a ``hump''. Assuming that the optical thickness, diffusion coefficient $D^\pm$, the mesh size $h^\pm$, and finite element order $p^\pm$ are all problem dependent, only the value of $C$ remains user defined. Knowing the problem specifications {\em a priori} may inform a particular choice of $C$.
 
@@ -257,14 +259,15 @@ The problems here have the same cross sections and source as above but 1 cm by 1
 \addlegendentry{$c=0.999999$}
   \end{axis}
 \end{tikzpicture}
-\caption{Spectral radius data for various scattering ratios $c$ using $4^\text{th}$-order finite elements, constant $C=4$, and third-order mesh.}
+\caption{Spectral radius data for various scattering ratios $c$ using $4^\text{th}$-order finite elements, constant $C=4$, and $3^\text{rd}$-order mesh.}
 \label{fig:cP4C43MeshUnit}
 \end{figure}
 
 \FloatBarrier
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Infinite Medium MIP DSA Results}
+\subsubsection{Infinite Medium MIP DSA Results}
+\label{sec:InfiniteMediumMIPDSAResults}
 It is possible that the previous finite domain problems did not excite all of the error modes. Here, we test a uniform grid with periodic boundaries on all four sides of the problem. We performed some of the same calculations as in the previous subsection. Figures \ref{fig:MIP2OrthoPer} - \ref{fig:MIP6OrthoPer} show the results.
 
 \begin{figure}[!hbt]
@@ -359,13 +362,13 @@ It is possible that the previous finite domain problems did not excite all of th
 \label{fig:MIP6OrthoPer}
 \end{figure}
 
-We see the spectral radii in all plots has similar behavior as in the finite domain plots. However, the magnitudes are lower in general and the peaks are almost nonexistent at the ``switch''. Notably, $p=1$ has the largest peak. The Fourier analysis performed by Wang and Ragusa \cite{WangRagusaDSA} spans $10^{-3}$ to $10^3$ mfps with smooth behavior at either of the ends. Numerically, we observe the smooth behavior for thicker cells but the optically thin cells do not behave as well. In some instances, the spectral radius is erratic and does not converge. These erratic spectral radii are given the value of 1 in Figures \ref{fig:MIP2OrthoPer} - \ref{fig:MIP6OrthoPer}. Without DSA, these thin problems converge very quickly. The observed instability occurs outside the range of the results published by Wang and Ragusa. At this time, we do are uncertain whether these results are real or an artifact of numerical precision, but we plan to investigate in the near future.
+We see the spectral radii in all plots has similar behavior as in the finite domain plots. However, the magnitudes are lower in general and the peaks are almost nonexistent at the ``switch''. Notably, $p=1$ has the largest peak. The Fourier analysis performed by Wang and Ragusa \cite{WangRagusaDSA} spans $10^{-3}$ to $10^3$ mfps with smooth behavior at either of the ends. Numerically, we observe the smooth behavior for thicker cells but the optically thin cells do not behave as well. In some instances, the spectral radius is erratic and does not converge. These erratic spectral radii are given the value of 1 in Figures \ref{fig:MIP2OrthoPer} - \ref{fig:MIP6OrthoPer}. Without DSA, these thin problems converge very quickly. The observed instability occurs outside the range of the results published by Wang and Ragusa. At this time, we do are uncertain whether these results are real or an artifact of numerical precision, but we plan to investigate in the future.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{MIP DSA with Robin Boundary Conditions}
 \label{sec:MIPDSARobinBCs}
-Kanschat \cite{KanschatDGViscousIncompressFlow} shows that Equation~\ref{eq:DSALHS} employ Nitsche's method for ``a fully conforming method of treating Dirichlet boundary values.'' The boundary terms $\left(\partial \mathcal{D}^d \right)$ in this form are homogeneous Dirichlet boundary conditions. The result is that the DSA correction for the scalar flux at the problem boundaries is zero, so the scalar flux is only updated by the transport solution. That is, the DSA correction only accelerates the interior solution. Consequently, the scalar fluxes on the problem boundary are only subjected to the transport equation solution source iterations.
+Kanschat \cite{KanschatDGViscousIncompressFlow} shows that Equation~\ref{eq:DSADirichletLHS} employ Nitsche's method for ``a fully conforming method of treating Dirichlet boundary values.'' The boundary terms $\left(\partial \mathcal{D}^d \right)$ in this form are homogeneous Dirichlet boundary conditions. The DSA correction for the scalar flux at the problem boundaries is fixed to zero, so the scalar flux is only updated by the transport solution. That is, the DSA correction only accelerates the interior solution. Consequently, the scalar fluxes on the problem boundary are only subjected to the transport equation solution source iterations.
 
 Instead, a DSA update equation should incorporate Robin boundary conditions (zero incident partial current) on the boundaries,
 \begin{flalign}
@@ -398,12 +401,12 @@ b_{MIP,V} \left(\varphi, v \right) = \left(\sigma_a\ \varphi, v \right)_\mathcal
 \label{eq:DSARobinLHS}
 \end{multline}
 
-\noindent and the linear form remains Eq.~\ref{eq:DSARHS}. The only difference between Eqs.~\ref{eq:DSADirichletLHS} and~\ref{eq:DSARobinLHS} are the problem boundary terms.
+\noindent and the linear form remains Equation~\ref{eq:DSARHS}. The only difference between Equations~\ref{eq:DSADirichletLHS} and~\ref{eq:DSARobinLHS} are the problem boundary terms.
 
 %Equation \ref{eq:MIP} stops the stabilization parameter from going to zero as the cell becomes optically thick (i.e. as $\epsilon \rightarrow 0$, $D^\pm \rightarrow 0$, thus $\kappa_e^{IP} \rightarrow 0$).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Accuracy}
+\subsubsection{Accuracy}
 \label{sec:MIPDSARobinBCAccuracy}
 An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using the proposed Robin boundary condition methods. The original MIP DSA method (Equation~\ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is
 \begin{subequations}
@@ -419,7 +422,7 @@ c_2 & = \left[-c_1 \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} -
 \end{flalign}
 \end{subequations}
 
-Table~\ref{tab:1DDiffusionComparison} shows the errors between our DGFEM solution and the analytic diffusion equation for various cell sizes. For all cell sizes, the Robin boundary condition method achieves errors on the order of $10^{-10}$ or better. This helps confirm the correct implementation of the vacuum boundary conditions on the DSA equation. We also notice that as $\varepsilon \rightarrow 0$, we have $D=\varepsilon/(3 \sigma_t) \rightarrow 0$, and
+Table~\ref{tab:1DDiffusionComparison} shows the errors between the DGFEM solution and the analytic diffusion equation for various cell sizes. For all cell sizes, the Robin boundary condition method achieves errors on the order of $10^{-10}$ or better. This helps confirm the correct implementation of the vacuum boundary conditions on the DSA equation. We also notice that as $\varepsilon \rightarrow 0$, we have $D=\varepsilon/(3 \sigma_t) \rightarrow 0$, and
 \begin{flalign}
 \left[\left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^d} - \frac{1}{2} \left( \varphi, D \partial_n v \right)_{\partial \mathcal{D}^d} - \frac{1}{2} \left( D \partial_n \varphi, v \right)_{\partial \mathcal{D}^d} \right] \rightarrow \left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^d}.
 \end{flalign}
@@ -450,6 +453,7 @@ $1 \times 10^{-6}$ & $4.08 \times 10^{-10}$ & $3.91 \times 10^{-7}$ \\\hline
 \label{tab:1DDiffusionComparison}
 \end{table}
 
+\begin{comment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Fourier Analysis}
 \label{sec:RobinBCFourierAnalysis}
@@ -459,6 +463,7 @@ In this section, we perform a Fourier analysis of the DSA + SI scheme using Robi
 \end{flalign}
 
 \noindent where $\hat{\psi}_m^{(\ell+1/2)} = \psi _m- \psi_m^{(\ell+1/2)}$ and $\hat{\phi}^{(\ell)} = \phi - \phi^{(\ell)}$ are the deviations of the approximate solution from the exact solution.
+\end{comment}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Sensitivity Study of the Spectral Radius}
@@ -496,7 +501,9 @@ Figure~\ref{fig:MIPHOC2OrthoCurrent} shows the spectral radius of various finite
 \label{fig:MIPHOC2OrthoCurrent}
 \end{figure}
 
-Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. Contrasting the homogeneous Dirichlet boundary condition method, there is very little sensitivity of finite element order in the intermediate optical thickness region. However, we observe slight dependencies of the spectral radius to the finite element order in the optically thin and optically thick regions. Also, contrasting the Dirichlet boundary conditions, the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions. Figures~\ref{fig:MIPHOC2OrthoCurrent}~and~\ref{fig:MIPHOC4OrthoCurrent} are nearly indistinguishable. Hence, a choice between $C=2$ and $C=4$ is moot.
+\FloatBarrier
+
+Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. Contrasting the homogeneous Dirichlet boundary condition method, there is very little sensitivity of finite element order in the intermediate optical thickness region. However, we observe slight dependencies of the spectral radius to the finite element order in the optically thin and optically thick regions. Also, contrasting the Dirichlet boundary conditions, the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions. The results in Figure~\ref{fig:MIPHOC4OrthoCurrent} are remarkably similar to Figure~\ref{fig:MIPHOC2OrthoCurrent}, indicating that the spectral radius is less sensitive to the interior surface terms than the problem boundary conditions.
 
 \begin{figure}[!hbt]
 \centering
@@ -529,7 +536,9 @@ Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite
 \label{fig:MIPHOC4OrthoCurrent}
 \end{figure}
 
-Figure~\ref{fig:MIPHOC6OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=6$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. However, similar to Figure~\ref{fig:MIPHOC6Ortho}, there is a rise in the spectral radius (a ``hump'') in nearly the same cell size range. The remainder of the spectral radii profiles are very similar to those of Figures~\ref{fig:MIPHOC2OrthoCurrent}~and~\ref{fig:MIPHOC4OrthoCurrent}. Since there is no spectral radius improvement in any other cell regimes, this choice for $C$ is undesirable. Again, we observe the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions than with using homogeneous Dirichlet boudnary conditions.
+\FloatBarrier
+
+Figure~\ref{fig:MIPHOC6OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=6$ using the homogeneous Robin boundary condition. Again, we observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} no longer appear. However, similar to Figure~\ref{fig:MIPHOC6Ortho}, there is a rise in the spectral radius (a ``hump'') in nearly the same cell size range. The remainder of the spectral radii profiles are very similar to those of Figures~\ref{fig:MIPHOC2OrthoCurrent}~and~\ref{fig:MIPHOC4OrthoCurrent}. Since there is no spectral radius improvement in any other cell regimes, this choice for $C$ is undesirable. Again, we observe the spectral radii in the optically thick region are substantially higher with the Robin boundary conditions than with using homogeneous Dirichlet boundary conditions.
 
 \begin{figure}[!hbt]
 \centering
@@ -562,29 +571,14 @@ Figure~\ref{fig:MIPHOC6OrthoCurrent} shows the spectral radius of various finite
 \label{fig:MIPHOC6OrthoCurrent}
 \end{figure}
 
-Figure~\ref{fig:MIPHOC4OrthoCurrent} shows the spectral radius of various finite element orders on an orthogonal mesh for $C=4$ using homogeneous Robin boundary condition. The results are remarkably similar to Figure~\ref{fig:MIPHOC2OrthoCurrent}, indicating that the spectral radius is less sensitive to the interior surface terms than the problem boundary conditions.
-
-We have learned that 
-Figure~\ref{fig:MIPHOC2OrthoCurrent} shows the spectral radii using the homogeneous Robin boundary condition. In contrast, the Robin boundary condition method is very smooth and consistently below $\rho = 0.6$ through the range of cell sizes. However, the latter has substantially larger spectral radii in the optically thick regime.
-
-The DCF method was originally derived using the homogeneous Dirichlet boundary conditions so that it was a consistent discretization with the discretized transport equation.
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{As a Preconditioner}
+\FloatBarrier
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Conclusions}
-{\color{red}COPIED FROM ANS TRANSACTION}
-{\color{blue}
-Our numerical results indicate that we have correctly implemented the MIP DSA equations using homogeneous Robin boundary conditions.
-
-We characterized the spectral radius for several combinations of the constant $C$ and the finite element order $p$ for variable cell sizes. While we see SI acceleration in all cases, there is not a set of parameters that promote smaller spectral radii in all regimes, but problem constraints may motivate the parameter choice. Each variable, $C$ and $p$, increased the spectral radius to some degree. The spectral radius using the Robin boundary condition method is substantially less sensitive to the constant $C$ than with Dirichlet boundary conditions.
+\label{sec:DSAConclusions}
+We characterized the spectral radius for several combinations of the constant $C$ and the finite element order $p$ for variable cell sizes. While we see SI acceleration in all cases, there is not a set of parameters that promote smaller spectral radii in all regimes, but problem constraints may motivate the parameter choice. Each variable, $C$ and $p$, increased the spectral radius to some degree. The spectral radius using the Robin boundary condition method is substantially less sensitive to the constant $C$ than with Dirichlet boundary conditions. The Robin boundary condition method is very smooth and consistently below $\rho = 0.6$ through the range of cell sizes. However, the Robin boundary condition method has substantially larger spectral radii in the optically thick regime.
 
 In the future, we will perform a Fourier analysis of the implemented vacuum boundary condition method. We will also consider a wide range of problems including heterogeneous media. To avoid a substantial degredation in effectiveness, this requires a relatively modern technique of preconditioning a Krylov method with the DSA operator~\cite{WarsaKrylovDSA}. Wang and Ragusa~\cite{WangRagusaDSA} observed this degradation of effectiveness but MIP DSA has yet to be used as a preconditioner to a Krlyov method.
-}
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}

@@ -7,19 +7,20 @@
 \section{Conclusions}
 \label{sec:Conclusions}
 
+In this dissertation, we derived and implemented the Robin boundary condition for the modified interior penalty (MIP) diffusion synthetic acceleration (DSA) equations. The prior discretization was unconditionally convergent in all optical thicknesses but contained a dependency that was user defined. The Robin boundary condition tremendously reduces the impact of this dependency, while still being an unconditionally stable method. We observed a degredation in the convergence rate in optically thick material, that we leave to future work.
+
+We additionally derived and implemented an \RZ\ geometry spatial discretization for the high-order (HO) discontinuous finite element method(DFEM). Using several numerical test problems we observed the preservation of the $O(p+1)$ spatial convergence rates that was expected and has been seen for $1^\text{st}$-order methods on sufficiently smooth solutions. We also demonstrated that this convergence rate is unaffected by meshes with curved surfaces. This work has extended the results to high-order methods and onto meshes with curved surfaces. Regularity constrained solutions can have degraded spatial convergence rates, and we demonstrated that the convergence rates are no longer dependent upon the finite element order, although HO methods generally obtain smaller errors. Finally, we examined the ability to preserve spherical symmetry with \RZ\ geometry. In general, the finite element order and the mesh refinement determined the symmetry preservation. Neither the \SN\ order nor the curvature of the mesh had significant impact. The exception is that for $1^\text{st}$-order finite elements the mesh curvature did increase the spherical symmetry.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{FutureWork}
 \label{subsec:FutureWork}
+To efficiently solve for larger problems (i.e., more degrees of freedom), it is essential to investigate methods for solving the system of equations. Currently we simultaneously solve for every degree of freedom in the problem. This limits the overall number of unknowns that we can accommodate because they all get stored in memory. However, if we solved individual mesh cells and systematically ``swept through the mesh'' (solve the sparse system of equations for each quadrature direction, in parallel or sequentially), we eliminate this limitation. This research will require allowing for cycles in the mesh, which will require careful handling.
 
-Future work beyond the scope of these research objectives could include methods for solving the system of equations. Currently we simultaneously solve for every degree of freedom in the problem. This limits the overall number of unknowns that we can accommodate because they all get stored in memory. However, if we solved individual mesh cells and systematically ``swept through the mesh'' (solve the sparse system of equations for each quadrature direction, in parallel or sequentially), we eliminate this limitation. This allows for cycles (discussed in Section \ref{sec:PotentialIssues}) in the mesh, which require careful handling.
+An investigation into numerical integration methods for the surfaces that have both incident and outgoing angular fluxes is prudent. On these meshes with curved surfaces, integrating a surfaces that has a discontinuous first-derivative with a polynomial approximation may not be the most effective method.
 
-Negative energy densities, observed in some of the test problems above, may contribute to negative mass densities in the equations of state of multiphysics problems. This must be addressed. Mentioned previously are lumping the matrices that constitute the bilinear form or perform a negative energy density fix up. The latter results in a nonlinear system of equations, which may be satisfactory given the TRT equations are already nonlinear. Oscillations could be reduced by using lower order elements in susceptible regions. Investigating an adaptive element could prove beneficial.
+Negative scalar fluxes, observed in some of the test problems above, are non-physical and must be addressed. Other research has utilized lumping techniques on several of the matrices that constitute the bilinear form. Alternatively, negative flux fixup methods could be employed to correct the negativities after solving for the scalar flux. This results in a non-linear system of equations that may be acceptable in more complicated multiphsyics applications that are already non-linear.
 
-Coupling the TRT equations with the hydrodynamics equations is a logical progression toward modeling a realistic problem. Understanding the coupling between equations may be challenging given the variety of physical phenomena in these problems. The increase in the number of degrees of freedom upon this coupling begs for an increase in efficiency. An investigation into increased parallelization is warranted along with solution methods such as sweeping through the mesh.
 
-{\color{blue}
-Mesh sweeping, breaking cycles.
-}
 
 %\bibliographystyle{apalike}
 %\bibliography{Thesis_bib}

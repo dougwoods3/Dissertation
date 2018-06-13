@@ -9,24 +9,200 @@
 \label{sec:AltImpDSARobinBCs}
 We considered two other implementations for the Robin boundary conditions. Method 1 substitutes Equation \ref{eq:RobinBC} into Equation \ref{eq:DSADirichletLHS}:
 \begin{multline}
-b_{MIP,1} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathcal{D} + \left( D \grad \phi, \grad w \right)_\mathcal{D} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i} \\
-+ \left(\kappa_e \phi, w \right)_{\partial \mathcal{D}^d}
-- \frac{1}{2} \left(\phi, D \partial_n w \right)_{\partial \mathcal{D}^d}
-+ \frac{1}{4} \left(\phi, w \right)_{\partial \mathcal{D}^d}
+b_{MIP,1} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_\mathcal{D} + \left( D \grad \varphi, \grad v \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}^e} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e} \\
++ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}^b}
+- \frac{1}{2} \left(\varphi, D \partial_n v \right)_{\partial \mathcal{D}^b}
++ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}^b}
 \label{eq:Method1}
 \end{multline}
 
 Method 2 is very similar to Method 1 with one term removed:
 \begin{multline}
-b_{MIP,2} \left( \phi, w \right) = \left( \sigma_a \phi, w \right)_\mathcal{D} + \left( D \grad \phi, \grad w \right)_\mathcal{D} \\
-+ \left( \kappa_e \llbracket \phi \rrbracket, \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i}
-+ \left( \llbracket \phi \rrbracket , \left\{\!\!\left\{ D \partial_n w \right\} \!\! \right\} \right)_{\partial \mathcal{D}^i} + \left( \left\{ \!\! \left\{ D \partial_n \phi \right\} \!\! \right\} , \llbracket w \rrbracket \right)_{\partial \mathcal{D}^i} \\
-+ \left(\kappa_e \phi, w \right)_{\partial \mathcal{D}^d}
-+ \frac{1}{4} \left(\phi, w \right)_{\partial \mathcal{D}^d}
+b_{MIP,2} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_\mathcal{D} + \left( D \grad \varphi, \grad v \right)_\mathcal{D} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}^e} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e} \\
++ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}^b}
++ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}^b}
 \label{eq:Method2}
 \end{multline}
+
+Method 3 is the Robin boundary condition we implemented in Section~\ref{sec:MIPDSARobinBCs}. An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using three proposed Robin boundary condition methods. The original MIP DSA method (Equation \ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is 
+\begin{flalign}
+\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{S_0}{\sigma_a} \\
+c_1 & = \frac{1}{4} \frac{S_0}{\sigma_a} \left[ \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right) \right] \left[\left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^2 - \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right)^2 e^{2/L} \right]^{-1} \\
+c_2 & = \left[-c_1 \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \frac{1}{4} \frac{S_0}{\sigma_a} \right] e^{1/L} \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^{-1}
+\end{flalign}
+
+\noindent where $L^2 = D/\sigma_a$. The opacities and source values were $\sigma_t = 1/\varepsilon$, $\sigma_a = \varepsilon$, $S_0 = \varepsilon$, and $D = 1/ \left(3 \sigma_t \right)$. A first-order orthogonal mesh, $3^\text{rd}$ order finite elements, $S_8$ level-symmetric angular quadrature, and convergence criteria (see Eq. \ref{eq:ModifiedConvergenceCriteria}) $\varepsilon_\text{conv} = 10^{-10}$ were used. Table \ref{tab:1DDiffusionComparison} summarizes the $L_2$ norm of the errors between the FEM diffusion equation solution and the analytic solution. Method 1 (Eq. \ref{eq:Method1}), Method 2 (Eq. \ref{eq:Method2}), and the MIP DSA method solve the problem with increasing accuracy as the problem gets more optically thick (i.e. $\varepsilon \rightarrow 0$). The accuracy of Method 3 appears to be significantly less dependent on the optical thickness of the problem. However, we do observe the accuracy is slightly reduced as the problem becomes optically thick. Method 3 is the most accurate discretization in all the problems considered here.
+
+%In the diffusion limit, the Robin boundary condition looks increasingly like a Dirichlet boundary condition. But our implementation doesn't introduce the Dirichlet boundary terms in the MIP DSA equations as we approach this limit. So it seems that we begin using an incorrect implementation of the Dirichlet boundary condition MIP equations as we approach the diffusion limit. Another way to look at this issue is that all of the terms in our proposed bilinear form have a diffusion coefficient (that depends on $\epsilon$) except for the Robin boundary term so this equation is not invariant to changes in the optical thickness as we might expect.
+
+\begin{table}[!h]
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$\varepsilon$ & Method 1 & Method 2 & Method 3 & MIP DSA \\\hline
+10 & 0.722 & 0.722 & $4.05 \times 10^{-11}$ & 0.722 \\\hline
+1 & 0.363 & 0.363 & $2.03 \times 10^{-10}$ & 0.363 \\\hline
+0.1 & 0.0607 & 0.0606 & $3.39 \times 10^{-10}$ & 0.0607 \\\hline
+0.01 & 0.00650 & 0.00647 & $3.63 \times 10^{-10}$ & 0.00650 \\\hline
+$1 \times 10^{-3}$ & $6.55 \times 10^{-4}$ & $6.21 \times 10^{-4}$ & $3.66 \times 10^{-10}$ & $6.55 \times 10^{-4}$ \\\hline
+$1 \times 10^{-4}$ & $6.56 \times 10^{-5}$ & $4.25 \times 10^{-5}$ & $3.66 \times 10^{-10}$ & $6.56 \times 10^{-5}$ \\\hline
+$1 \times 10^{-5}$ & $6.56 \times 10^{-6}$ & $2.19 \times 10^{-6}$ & $3.67 \times 10^{-10}$ & $6.54 \times 10^{-6}$ \\\hline
+$1 \times 10^{-6}$ & $6.56 \times 10^{-7}$ & $2.18 \times 10^{-7}$ & $4.08 \times 10^{-10}$ & $3.91 \times 10^{-7}$ \\\hline
+\end{tabular}}
+\caption{L$_2$ norm of the errors between the diffusion equation using the given boundary condition method and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements, $C=4$, on an orthogonal mesh with 2304 zones.}
+\label{tab:1DDiffusionComparison}
+\end{table}
+
+\FloatBarrier
+
+\begin{comment}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Effectiveness of Accelerating the Source Iteration}
+
+We use the accelerated source iteration method (Eqs. \ref{eqs:DSAAlgorithm}) to solve a 2-D uniform infinite medium problem using an old implementation of the three proposed methods (Eqs. \ref{eq:Method1}, \ref{eq:Method2}, and \ref{eq:DSARobinLHS}) and the MIP DSA method (Eq. \ref{eq:DSADirichletLHS}). This problem investigates the spectral radii of each method using $3^\text{rd}$ order finite elements and $S_8$ angular quadrature. The volumetric source is $S_0=0$ so the analytic solution is $\phi = S_0 / \sigma_a = 0$. The convergence criteria was simply
+\begin{flalign}
+\norm{\varphi - 0}_2 < 10^{-12}
+\end{flalign}
+
+Table \ref{tab:BCConvergenceComparisonOrthoMesh} shows the convergence properties for the DSA methods considered on a uniform orthogonal quadrilateral mesh. Tables \ref{tab:BCConvergenceComparison1OMesh} - \ref{tab:BCConvergenceComparison3OMesh} show similar results on 1$^\text{st}$-order transformed, 2$^\text{nd}$-order transformed, and 3$^\text{rd}$-order transformed meshes, respectively.
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\cline{4-11}
+\multicolumn{3}{}{} & \multicolumn{4}{|c|}{number of iterations} & \multicolumn{4}{|c|}{spectral radius} \\\hline
+$\varepsilon$ & $\kappa_e$ & $\kappa_\text{MFEM}$ & M. 1 & M. 2 & M. 3 & Dirichlet & M. 1 & M. 2 & M. 3 & Dirichlet \\\hline
+1e-3 & $\frac{1}{4}$ & $4.6875 \times 10^1$ & 235 & 52 & 33 & 29 & 0.8966 & 0.6225 & 0.4751 & 0.4207 \\\hline
+1e-4 & $\frac{1}{4}$ & $4.6875 \times 10^2$ & 89 & 59 & 34 & 11 & 0.7482 & 0.6551 & 0.4895 & 0.09 \\\hline
+1e-5 & $\frac{1}{4}$ & $4.6875 \times 10^3$ & 42 & 60 & 34 & 8 & 0.5398 & 0.6604 & 0.4911 & 0.03 \\\hline
+1e-6 & $\frac{1}{4}$ & $4.6875 \times 10^4$ & 37 & 60 & 34 & 7 & 0.4968 & 0.6609 & 0.4914 & 0.02 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a first order orthogonal mesh.}
+\label{tab:BCConvergenceComparisonOrthoMesh}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\cline{4-11}
+\multicolumn{3}{}{} & \multicolumn{4}{|c|}{number of iterations} & \multicolumn{4}{|c|}{spectral radius} \\\hline
+$\varepsilon$ & $\kappa_e$ & $\kappa_\text{MFEM}$ & M. 1 & M. 2 & M. 3 & Dirichlet & M. 1 & M. 2 & M. 3 & Dirichlet \\\hline
+1e-3 & note 1 & $4.6875 \times 10^1$ & 54 & 55 & 33 & 109 & 0.633 & 0.649 & 0.475 & 0.801 \\\hline
+1e-4 & note 1 & $4.6875 \times 10^2$ & 70 & 68 & 34 & 28 & 0.706 & 0.708 & 0.489 & 0.424 \\\hline
+1e-5 & note 1 & $4.6875 \times 10^3$ & 72 & 70 & 34 & 26 & 0.714 & 0.715 & 0.491 & 0.388 \\\hline
+1e-6 & note 1 & $4.6875 \times 10^4$ & 73 & 70 & 34 & 25 & 0.715 & 0.715 & 0.491 & 0.385 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a first order transformed mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:BCConvergenceComparison1OMesh}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\cline{4-11}
+\multicolumn{3}{}{} & \multicolumn{4}{|c|}{number of iterations} & \multicolumn{4}{|c|}{spectral radius} \\\hline
+$\varepsilon$ & $\kappa_e$ & $\kappa_\text{MFEM}$ & M. 1 & M. 2 & M. 3 & Dirichlet & M. 1 & M. 2 & M. 3 & Dirichlet \\\hline
+1e-3 & note 1 & $4.6875 \times 10^1$ & 55 & 56 & 33 & 123 & 0.635 & 0.651 & 0.474 & 0.821 \\\hline
+1e-4 & note 1 & $4.6875 \times 10^2$ & 71 & 69 & 34 & 30 & 0.710 & 0.711 & 0.489 & 0.442 \\\hline
+1e-5 & note 1 & $4.6875 \times 10^3$ & 73 & 71 & 34 & 27 & 0.718 & 0.718 & 0.491 & 0.406 \\\hline
+1e-6 & note 1 & $4.6875 \times 10^4$ & 74 & 71 & 34 & 27 & 0.719 & 0.719 & 0.491 & 0.403 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a second order transformed mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:BCConvergenceComparison2OMesh}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\cline{4-11}
+\multicolumn{3}{}{} & \multicolumn{4}{|c|}{number of iterations} & \multicolumn{4}{|c|}{spectral radius} \\\hline
+$\varepsilon$ & $\kappa_e$ & $\kappa_\text{MFEM}$ & M. 1 & M. 2 & M. 3 & Dirichlet & M. 1 & M. 2 & M. 3 & Dirichlet \\\hline
+1e-3 & note 1 & $4.6875 \times 10^1$ & 55 & 56 & 33 & 123 & 0.635 & 0.651 & 0.474 & 0.821 \\\hline
+1e-4 & note 1 & $4.6875 \times 10^2$ & 71 & 69 & 34 & 30 & 0.710 & 0.711 & 0.489 & 0.442 \\\hline
+1e-5 & note 1 & $4.6875 \times 10^3$ & 73 & 71 & 34 & 27 & 0.718 & 0.718 & 0.491 & 0.406 \\\hline
+1e-6 & note 1 & $4.6875 \times 10^4$ & 74 & 71 & 34 & 27 & 0.719 & 0.719 & 0.491 & 0.403 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a third order transformed mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:BCConvergenceComparison3OMesh}
+\end{table}
+
+\FloatBarrier
+
+A sensitivity study was performed on element order. Tables \ref{tab:FEOrderSensitivityOrthoMesh} - \ref{tab:FEOrderSensitivity8OMesh} summarize the results using 1$^\text{st}$-order orthogonal, 3$^\text{rd}$-order transformed, and 8$^\text{th}$-order transformed meshes, respectively.
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{}{} & \multicolumn{2}{|c|}{no. iterations} & \multicolumn{2}{|c|}{spec. rad.} \\\hline
+$p$ & M. 3 & Dirichlet & M. 3 & Dirichlet \\\hline
+1 & 35 & 7 & 0.491 & 0.020 \\\hline
+2 & 34 & 7 & 0.491 & 0.026 \\\hline
+3 & 34 & 8 & 0.491 & 0.035 \\\hline
+4 & 34 & 8 & 0.491 & 0.04 \\\hline
+6 & 34 & 9 & 0.491 & 0.06 \\\hline
+8 & 33 & 10 & 0.491 & 0.08 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a first order orthogonal mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:FEOrderSensitivityOrthoMesh}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{}{} & \multicolumn{2}{|c|}{no. iterations} & \multicolumn{2}{|c|}{spec. rad.} \\\hline
+$p$ & M. 3 & Dirichlet & M. 3 & Dirichlet \\\hline
+1 & 35 & 26 & 0.491 & 0.4 \\\hline
+2 & 34 & 27 & 0.491 & 0.398 \\\hline
+3 & 34 & 27 & 0.491 & 0.401 \\\hline
+4 & 34 & 27 & 0.491 & 0.406 \\\hline
+6 & 34 & 28 & 0.491 & 0.416 \\\hline
+8 & 33 & 28 & 0.491 & 0.429 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a third order transformed mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:FEOrderSensitivity3OMesh}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{}{} & \multicolumn{2}{|c|}{no. iterations} & \multicolumn{2}{|c|}{spec. rad.} \\\hline
+$p$ & M. 3 & Dirichlet & M. 3 & Dirichlet \\\hline
+1 & 35 & 26 & 0.491 & 0.4 \\\hline
+2 & 34 & 26 & 0.491 & 0.398 \\\hline
+3 & 34 & 27 & 0.491 & 0.402 \\\hline
+4 & 34 & 27 & 0.491 & 0.406 \\\hline
+6 & 34 & 28 & 0.491 & 0.416 \\\hline
+8 & 33 & 28 & 0.491 & 0.429 \\\hline
+\end{tabular}}
+\caption{Convergence properties for several boundary condition methods in the DSA solution on a eighth order transformed mesh. Note 1: $h_\perp^\pm$ is no longer uniform but $\kappa$ values were used as if it were.}
+\label{tab:FEOrderSensitivity8OMesh}
+\end{table}
+
+\end{comment}
+
 
 
 

@@ -1,0 +1,182 @@
+\documentclass[12pt]{article}
+\usepackage{OSUDissertation}
+
+\begin{document}
+
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+\label{sec:Methods}
+
+In this section we describe the high-order (HO) basis functions that we employ in this research (Section~\ref{sec:HODFEM}), the HO mesh transformation required (Section~\ref{sec:HOMeshes}), and the solution method that we employ to solve the system of equations (Section~\ref{sec:SolutionMethod}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{High Order DFEM}
+\label{sec:HODFEM}
+The basis functions are spatially dependent. Therefore, they are unique to each physical mesh zone due to the shape and location of each zone. We avoid having to perform calculations with arbitrarily large set of basis functions by transforming each physical element into the reference element. The basis functions on the reference element are identical regardless of the physical element shape and position. In general, the basis functions are allowed to be unique to each element, but we use the same set of basis functions across all elements for simplicity.
+
+One requirement for the basis functions is that they are unity at the integration point they ``live'' on and zero at all of the others. In two-dimensions, the general form of the first-order polynomial basis function is
+\begin{flalign}
+b(x,y) & = a x y + b x + c y + d,
+\end{flalign}
+%
+and the second-order basis function,
+\begin{flalign}
+b(x,y) & = a x^2 y^2 + b x^2 y + c x^2 + d x y^2 + e x y + f x + g y^2 + h y + j,
+\end{flalign}
+%
+where the sets $\{a,b,c,d\}$ and $\{a,b,c,d,e,f,g,h,j\}$ are the sets of coefficients that define the unique basis function for each integration point, respectively. The location of the integration points is important. For example, we may place these evenly across the reference element or at Gaussian quadrature locations. On the unit square $[0,1] \times [0,1]$, the Gaussian integration points are located at the cross product of the nodes on $[0,1]$. Listed for linear, quadratic, and cubic finite elements in Table~\ref{tab:GaussianQuadrature}, the Gaussian integration point locations were transformed from the traditional $[-1,1]$ to the reference element length $[0,1]$.
+
+\begin{table}[!htb]
+\centering
+{\renewcommand{\arraystretch}{2}
+\begin{tabular}{|c|c|c|}
+\hline
+FE order & Points on $[-1,1]$ & Points on $[0,1]$ \\\hline
+1 & $\displaystyle \pm \frac{1}{\sqrt{3}}$ & \begin{tabular}{c} $\displaystyle \frac{1}{3 + \sqrt{3}}$ \\ $\displaystyle 1- \frac{1}{3+\sqrt{3}}$ \end{tabular} \\\hline
+2 & \begin{tabular}{c} 0 \\ $\displaystyle \pm \sqrt{\frac{3}{5}}$ \end{tabular} & \begin{tabular}{c} $\displaystyle \frac{1}{5 + \sqrt{15}}$ \\ 0.5 \\ $\displaystyle 1- \frac{1}{5+\sqrt{15}}$ \end{tabular} \\\hline
+3 & \begin{tabular}{c} $\displaystyle \pm \sqrt{\frac{3}{7} - \frac{2}{7} \sqrt{\frac{6}{5}}}$ \\ $\displaystyle \pm \sqrt{\frac{3}{7} + \frac{2}{7} \sqrt{\frac{6}{5}}}$ \end{tabular} & \begin{tabular}{c} $\displaystyle \frac{10+\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle \frac{10-\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle 1- \frac{10+\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \\ $\displaystyle 1- \frac{10-\sqrt{30}}{35 + \sqrt{35(15-2 \sqrt{30})}}$ \end{tabular} \\\hline
+\end{tabular}}
+\caption{Gaussian quadrature locations.}
+\label{tab:GaussianQuadrature}
+\end{table}
+
+Once the finite element order and the set of integration points is determined, the linear system can be arranged to determine the coefficients. For example, to determine the first-order basis function that ``lives'' at integration point $(x_1, y_1)$ (and is equal to unity at that integration point and is zero at the remaining three), we assemble the system of equations
+\begin{flalign}
+\begin{bmatrix}
+x_1 y_1 & x_1 & y_1 & 1 \\
+x_2 y_2 & x_2 & y_2 & 1 \\
+x_3 y_3 & x_3 & y_3 & 1 \\
+x_4 y_4 & x_4 & y_4 & 1
+\end{bmatrix}
+\begin{bmatrix}
+a \\
+b \\
+c \\
+d
+\end{bmatrix}
+& =
+\begin{bmatrix}
+1 \\
+0 \\
+0 \\
+0
+\end{bmatrix}.
+\end{flalign}
+%
+The 1 inside the solution vector on the right-hand-side determines which basis function coefficients will be obtained. For example, the right-hand-side vector $\left[0,0,1,0 \right]^T$ will return the basis function coefficients for the third integration point at $(x_3, y_3)$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Meshes with Curved Surfaces}
+\label{sec:HOMeshes}
+The complicated shapes of each mesh zone create a challenge by having to solve the discretized equations for each unique mesh zone. We avoid having to solve a unique set of equations for each mesh zone by transforming the mesh zone into the reference element. Each mesh zone will have a unique transformation but an identical set of basis functions to obtain the solution on the reference element.
+
+We set up the system of equations (Section~\ref{sec:HODFEM}) on each individual mesh zone after we transform it to the reference element. After performing the following integrations, we map the solution back to the physical element. The bi-quadratic mapping from the reference element to the physical element, shown in Figure~\ref{fig:HOMapping}, has the following functional form
+\begin{flalign}
+\begin{bmatrix}
+x(\rho, \kappa) \\
+y(\rho, \kappa)
+\end{bmatrix}
+& = \sum_{i=1}^{J_k} \sum_{j=1}^{J_k}
+\begin{bmatrix}
+x_{ij} \\
+y_{ij}
+\end{bmatrix}
+N_i(\rho) N_j(\kappa)
+\end{flalign}
+%
+where
+\begin{flalign}
+N_l(\xi) & =
+\begin{cases}
+(2\xi-1)(\xi-1), & l = 1 \\
+4\xi(1-\xi), & l = 2 \\
+\xi(2\xi-1), & l = 3
+\end{cases}
+\end{flalign}
+%
+are the quadratic basis functions that have support points at typical locations shown in the left image of Figure~\ref{fig:HOMapping}.  The $(x_{ij}, y_{ij})$ coordinates are the locations of the support points in the physical element and are generally known. For example, the node $(x_{12},y_{12})$ is the location on the physical zone that is mapped from $(\rho,\kappa)=(0,0.5)$ on the reference element.
+
+\begin{figure}[!htb]
+\centering
+\hspace{-25pt}
+\begin{minipage}[c]{7.5cm}
+\raggedleft
+\begin{tikzpicture}
+\begin{axis}[
+	axis lines=left,
+	width=6.5cm,
+	height=6.5cm,
+    xmin=0.9, xmax=2.5,
+    ymin=0.8, ymax=2.5,
+    xlabel={$x$},
+    ylabel={$y$},
+    ]
+    \addplot[only marks, mark=*, mark size=1, color=red, mark options={solid, fill=red}] table [x index=0, y index=1]{./graphics/MeshTransform.dat};
+    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshTransNodes.dat};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\begin{minipage}[c]{0.75cm}
+\centering
+{\Huge$\mapsto$}
+\end{minipage}
+\begin{minipage}[c]{7.25cm}
+\raggedright
+\begin{tikzpicture}
+\begin{axis}[
+	axis lines=left,
+	width=6.5cm,
+	height=6.5cm,
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    xlabel={$\rho$},
+    ylabel={$\kappa$},
+    ]
+    \addplot[only marks, mark=*, mark size=1, color=blue, mark options={solid, fill=blue}] table [x index=0, y index=1]{./graphics/MeshReference.dat};
+    \addplot[only marks, mark=*, mark size=3, color=black, mark options={solid, fill=black}] table [x index=0, y index=1]{./graphics/MeshNodes.dat};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Example of mapping the reference element to a physical element.}
+\label{fig:HOMapping}
+\end{figure}
+
+The determinant of the Jacobian of the transformation,
+\begin{flalign}
+\det(J) & =
+\begin{vmatrix}
+\frac{\partial x}{\partial \rho} & \frac{\partial y}{\partial \rho} \\
+\frac{\partial x}{\partial \kappa} & \frac{\partial y}{\partial \kappa}
+\end{vmatrix},
+\label{eq:DeterminantJacobian}
+\end{flalign}
+%
+is used to perform the mapping from the physical space to $\rho$-$\kappa$ space.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Solution Method}
+\label{sec:SolutionMethod}
+We employ the Modular Finite Elements Library (MFEM)\footnote{\url{mfem.org}} to perform integrations to assemble the system of equations for each element. These elements are then assembled into a global matrix that acts on each spatial degree of freedom simultaneously.
+
+The meshes described in Section~\ref{sec:HOMeshes} add complications to the numerical methods used to solve the transport equation. In particular, cycles can be present during the spatial sweep of the mesh~\cite{Pautz2002ParallelSweeps,WareingDFEM3DUnsGrid}. It is common to solve for a single mesh zone using incident angular flux information and propagate that angular flux from mesh zone to mesh zone, sweeping through the grid. However, if any particular mesh zone has both incident and outgoing angular fluxes to another mesh zone, they depend upon each other in a cyclic manner. ``Breaking the cycle'' is some fashion is necessary to perform the numerical computation. Instead of sweeping through the grid, we utilize MFEM to generate the solution matrix for all of the mesh zones for the entire problem. This is computationally intensive, but it bypasses the need to consider any cycles that may occur.
+
+After generating the system of equations, we use UMFPack, a direct solver that performs a LU decomposition~\cite{SuiteSparse, DavisUMFPack} to solve for all of the spatial degrees of freedom for direction $\vec{\Omega}_m$. We solve the global system of equations for the scalar flux, $\phi$, using source iteration (Equation~\ref{eqs:SourceIteration}) with convergence criterion
+\begin{flalign}
+\norm{\phi^{(\ell)} - \phi^{(\ell-1)}}_\infty & < \varepsilon_\text{conv} (1- \rho)\ \norm{\phi^{(\ell)}}_\infty,
+\label{eq:ConvergenceCriteria}
+\end{flalign}
+
+\noindent where $\varepsilon_\text{conv}$ is some small tolerance and $\rho$ is the estimated spectral radius,
+\begin{flalign}
+\rho & \approx \frac{\norm{\phi^{(\ell)} - \phi^{(\ell-1)}}}{\norm{\phi^{(\ell-1)} - \phi^{(\ell-2)}}}.
+\end{flalign}
+
+
+
+%\bibliographystyle{apalike}
+%\bibliography{Thesis_bib}
+
+\end{document}

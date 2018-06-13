@@ -1,0 +1,39 @@
+\documentclass{standalone}
+\usepackage{graphics}
+\usepackage{tikz}
+\pgfrealjobname{survey}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+
+\begin{document}
+
+\beginpgfgraphicnamed{RZASMMSLinearRhoBrunnerp1g1r2}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=0.9\textwidth,
+    %height=0.9\textwidth,
+    grid=major,
+    xlabel={$\rho=\sqrt{r^2+z^2}$},
+    ylabel={$\phi_\text{asym}$},
+  	ymode=log,
+  	xmin=0,xmax=1,
+  	ymin=4e-9,ymax=5e-2,
+  	legend style={at={(1.0,1.0)},anchor=north east},
+  	]
+\
+\addplot[mark=diamond, only marks, mark size=3, draw=black, mark options={solid, fill=black}] table [x=rho, y=S4]{../../../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/RZASMMSLinearRhoBrunnerp1g1r2.dat};
+\addlegendentry{$S_4$}
+\addplot[mark=triangle, only marks, mark size=3, draw=red, mark options={solid, fill=red}] table [x=rho, y=S6]{../../../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/RZASMMSLinearRhoBrunnerp1g1r2.dat};
+\addlegendentry{$S_6$}
+\addplot[mark=square, only marks, mark size=3, draw=blue, mark options={solid, fill=blue}] table [x=rho, y=S8]{../../../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/RZASMMSLinearRhoBrunnerp1g1r2.dat};
+\addlegendentry{$S_8$}
+\addplot[mark=x, only marks, mark size=3, draw=olive, mark options={solid, fill=olive}] table [x=rho, y=S10]{../../../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/RZASMMSLinearRhoBrunnerp1g1r2.dat};
+\addlegendentry{$S_{10}$}
+\addplot[mark=o, only marks, mark size=3, draw=violet, mark options={solid, fill=violet}] table [x=rho, y=S12]{../../../../Research/graphics/Axisymmetry/RZASMMSLinearRhoBrunner/RZASMMSLinearRhoBrunnerp1g1r2.dat};
+\addlegendentry{$S_{12}$}
+
+  \end{axis}
+\end{tikzpicture}
+\endpgfgraphicnamed
+
+\end{document}
