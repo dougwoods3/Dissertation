@@ -5,7 +5,7 @@
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Mathemtica Scipts}
+\section{Mathematica Scripts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mass Matrix Entries for RZ BLD Gauss-Legendre on Quadrilaterals}
 
@@ -26,7 +26,7 @@ z1 := z0
 r2 := r1
 r3 := r0
 (*Quadrilateral transformation back to reference square-more general \
-than rectangle transofrmation-but NOT curved mesh*)
+than rectangle transformation-but NOT curved mesh*)
 
 r[rho_, kappa_] := (r1 - r0) rho + (r3 - r0) kappa + (r2 + r0 - r1 - 
      r3) rho kappa + r0
@@ -99,7 +99,7 @@ z1 := z0
 r2 := r1
 r3 := r0
 (*Quadrilateral transformation back to reference square-more general \
-than rectangle transofrmation-but NOT curved mesh*)
+than rectangle transformation-but NOT curved mesh*)
 
 r[rho_, kappa_] := (r1 - r0) rho + (r3 - r0) kappa + (r2 + r0 - r1 - 
      r3) rho kappa + r0
@@ -474,10 +474,10 @@ Lr + Lz
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{LinearForm Angular Redistribution Matrix Entries for RZ BLD Gauss-Legendre on Quadrilaterals}
+\subsection{Linear Form Angular Redistribution Matrix Entries for RZ BLD Gauss-Legendre on Quadrilaterals}
 
 \begin{verbatim}
-(*LinearForm Angular Redistribution matrix for RZ BLD Gauss-Legendre \
+(*Linear Form Angular Redistribution matrix for RZ BLD Gauss-Legendre \
 on quadrilaterals*)Clear[r0, r1, r2, r3, z0, z1, z2, z3, mr0, mr1, \
 mr2, mr3, mz0, mz1, mz2, mz3]
 (*Define physical integration point coordinates to compare to MFEM \
@@ -492,7 +492,7 @@ z1 := z0
 r2 := r1
 r3 := r0
 (*Quadrilateral transformation back to reference square-more general \
-than rectangle transofrmation-but NOT curved mesh*)
+than rectangle transformation-but NOT curved mesh*)
 
 r[rho_, kappa_] := (r1 - r0) rho + (r3 - r0) kappa + (r2 + r0 - r1 - 
      r3) rho kappa + r0
@@ -544,10 +544,10 @@ M*alphatau*psiMinusHalf
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{LinearForm Scattering/Fixed Source Matrix Entries for RZ BLD Gauss-Legendre on Quadrilaterals}
+\subsection{Linear Form Scattering/Fixed Source Matrix Entries for RZ BLD Gauss-Legendre on Quadrilaterals}
 
 \begin{verbatim}
-(*LinearForm scattering/fixed sources for RZ BLD Gauss-Legendre on \
+(*Linear Form scattering/fixed sources for RZ BLD Gauss-Legendre on \
 quadrilaterals*)Clear[r0, r1, r2, r3, z0, z1, z2, z3, mr0, mr1, mr2, \
 mr3, mz0, mz1, mz2, mz3, Source]
 (*Define physical integration point coordinates to compare to MFEM \
@@ -562,7 +562,7 @@ z1 := z0
 r2 := r1
 r3 := r0
 (*Quadrilateral transformation back to reference square-more general \
-than rectangle transofrmation-but NOT curved mesh*)
+than rectangle transformation-but NOT curved mesh*)
 
 r[rho_, kappa_] := (r1 - r0) rho + (r3 - r0) kappa + (r2 + r0 - r1 - 
      r3) rho kappa + r0

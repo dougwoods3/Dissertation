@@ -16,14 +16,10 @@ The following two sections describe the operators used in MFEM to accomplish thi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transport Operators}
 \label{sub:TransportOperators}
-Shown in Table~\ref{tab:mfemFunctions} are the functions within MFEM that integrate and assemble the various operators of the transport equation in \XY\ geometry. These are all available by default in the MFEM distribution. The functions are displayed along with the general form of their equation and their translation to the applicable component of the transport equation. The last two entries of Table~\ref{tab:mfemFunctions} are the interior boundaries using the upstream values (no. 5) and the problem boundary (no. 6). Several of the MFEM equations have coefficients, $\alpha$ and $\beta$, that are required input. 
-
-The normal vector $\hat{n}$ in MFEM is outward of the upwind mesh surface so a negative was applied to the normal vector to convert it to be the outward normal of the surface of cell $k$ like it has been previously defined in this dissertation.
-
-In order to perform the spatial integrations with a factor of $r$ we needed to modify the existing MFEM integrators. In general, this required multiplying the integrand by the physical $r$ location. Since we performed an integration by parts on the streaming operator to remove the $r$ from the $r$-derivative term, this greatly simplified our modification of these terms. Future research may require multiplying the basis function by $r$ prior to calculating the derivative at the integration point in order to preserve the conservation form of the \RZ\ transport equation. The operators for the \RZ\ transport equation and their MFEM implementations are shown in Table~\ref{tab:RZmfemFunctions}.
-
+Shown in Table~\ref{tab:mfemFunctions} are the functions within MFEM that integrate and assemble the various operators of the transport equation in \XY\ geometry.
+%
 \floatsetup[table]{capposition=bottom}
-\begin{sidewaystable}[!h]
+\begin{sidewaystable}[tb]
 \centering
 \begin{threeparttable}
 {\renewcommand{\arraystretch}{2}
@@ -36,9 +32,9 @@ In order to perform the spatial integrations with a factor of $r$ we needed to m
 3 & $\left(\sigma_s\ \phi, v_{i} \right)_{\mathcal{D}_k}$ & $\left(\varphi, v \right)_{\mathcal{D}_k}$ & DomainLFIntegrator$\left(\varphi \right)$ \\\hline
 4 & $\left(S_0, v_{i} \right)_{\mathcal{D}_k}$ & $\left(S_0, v \right)_{\mathcal{D}_k}$ & DomainLFIntegrator$\left(S_0 \right)$ \\\hline
 5 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathcal{D}_k^e}$ & \begin{tabular}{cc} $\alpha \left(\vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^e}$ \\
-$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^e}$ \end{tabular} & DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right) $ \\\hline
+$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^e}$ \end{tabular} & \begin{tabular}{c} DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right)$\\(applied to interior surfaces) \end{tabular} \\\hline
 6 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_j, v_{i} \right)_{\partial \mathcal{D}_k^b}$ & \begin{tabular}{cc} $\alpha \left(\vec{\Omega} \vd \hat{n}\ \psi, v \right)_{\partial \mathcal{D}_k^b}$ \\
-$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^b}$ \end{tabular} & DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right) $ \\\hline
+$+ \beta \left(\left| \vec{\Omega} \vd \hat{n} \right| \psi, v \right)_{\partial \mathcal{D}_k^b}$ \end{tabular} & \begin{tabular}{c} DGTraceIntegrator$\left( \vec{\Omega}, \alpha, \beta \right)$\\(applied to boundary surfaces) \end{tabular} \\\hline
 7 & $\left(\vec{\Omega} \vd \hat{n}\ \psi_\text{inc}, v_{i} \right)_{\partial \mathcal{D}_k}$ & \begin{tabular}{cc} $\frac{\alpha}{2} \left(\psi_{inc}\ \vec{\Omega} \vd \hat{n}, v \right)_{\partial \mathcal{D}_k}$ \\
 $- \beta \left(\psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\partial \mathcal{D}_k}$ \end{tabular} & BoundaryFlowIntegrator$\left(\psi_{inc}, \vec{\Omega}, \alpha, \beta \right)$ \\\hline
 \end{tabular}}
@@ -47,9 +43,15 @@ $- \beta \left(\psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_{\p
 \label{tab:mfemFunctions}
 \end{sidewaystable}
 \floatsetup[table]{capposition=top}
+%
+These are all available by default in the MFEM distribution. The functions are displayed along with the general form of their equation and their translation to the applicable component of the transport equation. The last two entries of Table~\ref{tab:mfemFunctions} are the interior boundaries using the upstream values (no. 5) and the problem boundary (no. 6). Several of the MFEM equations have coefficients, $\alpha$ and $\beta$, that are required input. 
 
+The normal vector $\hat{n}$ in MFEM is outward of the upwind mesh surface so a negative was applied to the normal vector to convert it to be the outward normal of the surface of cell $k$ like it has been previously defined in this dissertation.
+
+In order to perform the spatial integrations with a factor of $r$ we needed to modify the existing MFEM integrators. In general, this required multiplying the integrand by the physical $r$ location. Since we performed an integration by parts on the streaming operator to remove the $r$ from the $r$-derivative term, this greatly simplified our modification of these terms. Future research may require multiplying the basis function by $r$ prior to calculating the derivative at the integration point in order to preserve the conservation form of the \RZ\ transport equation. The operators for the \RZ\ transport equation and their MFEM implementations are shown in Table~\ref{tab:RZmfemFunctions}.
+%
 \floatsetup[table]{capposition=bottom}
-\begin{sidewaystable}[!h]
+\begin{sidewaystable}[tb]
 \centering
 \begin{threeparttable}
 {\renewcommand{\arraystretch}{2}
@@ -76,9 +78,9 @@ $- \beta \left(r\ \psi_{inc} \left| \vec{\Omega} \vd \hat{n} \right|, v \right)_
 \end{sidewaystable}
 \floatsetup[table]{capposition=top}
 
-MFEM has default settings for determining the degree of numerical integration to integrate each of the integrals of Tables~\ref{tab:mfemFunctions}~and~\ref{tab:RZmfemFunctions}. These default integration orders are shown in Table~\ref{tab:integrationOrders}. It was discovered that integrating all of the terms consistently was important for numerical conservation. For simplicity, each of the integration orders were set to the largest of the default integration orders. Table~\ref{tab:integrationOrders} shows that the integration order is the same for all of the integrators except DomainLFIntegrator, which is the largest integration order only if $p = 0$ (piecewise constant). While the results presented in this dissertation do not consider the circumstance of piecewise constant finite elements, this integration order was included in the code for future use.
-
-\begin{table}[!h]
+MFEM has default settings for determining the degree of numerical integration to integrate each of the integrals of Tables~\ref{tab:mfemFunctions}~and~\ref{tab:RZmfemFunctions}.
+%
+\begin{table}[tb]
 \centering
 {\renewcommand{\arraystretch}{2}
 \begin{tabular}{|c|c|}
@@ -99,6 +101,8 @@ BoundaryFlowIntegrator & $g \cdot d + 2 \cdot p - 1$ \\
 \caption{MFEM default integration orders for transport operators. The notation for the finite element order is $p$, mesh order is $g$, and problem spatial dimension is $d$.}
 \label{tab:integrationOrders}
 \end{table}
+%
+These default integration orders are shown in Table~\ref{tab:integrationOrders}. It was discovered that integrating all of the terms consistently was important for numerical conservation. For simplicity, each of the integration orders were set to the largest of the default integration orders. Table~\ref{tab:integrationOrders} shows that the integration order is the same for all of the integrators except DomainLFIntegrator, which is the largest integration order only if $p = 0$ (piece-wise constant). While the results presented in this dissertation do not consider the circumstance of piece-wise constant finite elements, this integration order was included in the code for future use.
 
 MFEM is equipped to visualize data using various tools requiring additional user input. The images presented in this dissertation were produced with VisIt, an open source visualization analysis tool~\cite{VisIt_Web}.
 

@@ -7,38 +7,41 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Alternative Implementations for DSA with Robin Boundary Conditions}
 \label{sec:AltImpDSARobinBCs}
-We considered two other implementations for the Robin boundary conditions. Method 1 substitutes Equation \ref{eq:RobinBC} into Equation \ref{eq:DSADirichletLHS}:
+We considered two other implementations for the Robin boundary conditions. Method 1 substitutes Equation~\ref{eq:RobinBC} into Equation~\ref{eq:DSADirichletLHS}:
 \begin{multline}
-b_{MIP,1} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_\mathcal{D} + \left( D \grad \varphi, \grad v \right)_\mathcal{D} \\
-+ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}
-+ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}^e} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e} \\
-+ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}^b}
-- \frac{1}{2} \left(\varphi, D \partial_n v \right)_{\partial \mathcal{D}^b}
-+ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}^b}
+b_{MIP,1} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_{\mathcal{D}_k} + \left( D \grad \varphi, \grad v \right)_{\mathcal{D}_k} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}_k^i}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}_k^i} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}_k^i} \\
++ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}_k^b}
+- \frac{1}{2} \left(\varphi, D \partial_n v \right)_{\partial \mathcal{D}_k^b}
++ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}_k^b}
 \label{eq:Method1}
 \end{multline}
 
 Method 2 is very similar to Method 1 with one term removed:
 \begin{multline}
-b_{MIP,2} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_\mathcal{D} + \left( D \grad \varphi, \grad v \right)_\mathcal{D} \\
-+ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e}
-+ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}^e} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}^e} \\
-+ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}^b}
-+ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}^b}
+b_{MIP,2} \left( \varphi, v \right) = \left( \sigma_a \varphi, v \right)_{\mathcal{D}_k} + \left( D \grad \varphi, \grad v \right)_{\mathcal{D}_k} \\
++ \left( \kappa_e \llbracket \varphi \rrbracket, \llbracket v \rrbracket \right)_{\partial \mathcal{D}_k^i}
++ \left( \llbracket \varphi \rrbracket , \left\{\!\!\left\{ D \partial_n v \right\} \!\! \right\} \right)_{\partial \mathcal{D}_k^i} + \left( \left\{ \!\! \left\{ D \partial_n \varphi \right\} \!\! \right\} , \llbracket v \rrbracket \right)_{\partial \mathcal{D}_k^i} \\
++ \left(\kappa_e \varphi, v \right)_{\partial \mathcal{D}_k^b}
++ \frac{1}{4} \left(\varphi, v \right)_{\partial \mathcal{D}_k^b}
 \label{eq:Method2}
 \end{multline}
 
-Method 3 is the Robin boundary condition we implemented in Section~\ref{sec:MIPDSARobinBCs}. An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using three proposed Robin boundary condition methods. The original MIP DSA method (Equation \ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is 
+Method 3 is the Robin boundary condition we implemented in Section~\ref{sec:MIPDSARobinBCs}. An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using three proposed Robin boundary condition methods. The original MIP DSA method (Equation~\ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is 
 \begin{flalign}
-\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{S_0}{\sigma_a} \\
-c_1 & = \frac{1}{4} \frac{S_0}{\sigma_a} \left[ \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right) \right] \left[\left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^2 - \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right)^2 e^{2/L} \right]^{-1} \\
+\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{S_0}{\sigma_a}
+\end{flalign}
+\begin{multline}
+c_1 = \frac{1}{4} \frac{S_0}{\sigma_a} \left[ \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right) \right] \\
+\cdot \left[\left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^2 - \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right)^2 e^{2/L} \right]^{-1}
+\end{multline}
+\begin{flalign}
 c_2 & = \left[-c_1 \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \frac{1}{4} \frac{S_0}{\sigma_a} \right] e^{1/L} \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right)^{-1}
 \end{flalign}
 
-\noindent where $L^2 = D/\sigma_a$. The opacities and source values were $\sigma_t = 1/\varepsilon$, $\sigma_a = \varepsilon$, $S_0 = \varepsilon$, and $D = 1/ \left(3 \sigma_t \right)$. A first-order orthogonal mesh, $3^\text{rd}$ order finite elements, $S_8$ level-symmetric angular quadrature, and convergence criteria (see Eq. \ref{eq:ModifiedConvergenceCriteria}) $\varepsilon_\text{conv} = 10^{-10}$ were used. Table \ref{tab:1DDiffusionComparison} summarizes the $L_2$ norm of the errors between the FEM diffusion equation solution and the analytic solution. Method 1 (Eq. \ref{eq:Method1}), Method 2 (Eq. \ref{eq:Method2}), and the MIP DSA method solve the problem with increasing accuracy as the problem gets more optically thick (i.e. $\varepsilon \rightarrow 0$). The accuracy of Method 3 appears to be significantly less dependent on the optical thickness of the problem. However, we do observe the accuracy is slightly reduced as the problem becomes optically thick. Method 3 is the most accurate discretization in all the problems considered here.
-
-%In the diffusion limit, the Robin boundary condition looks increasingly like a Dirichlet boundary condition. But our implementation doesn't introduce the Dirichlet boundary terms in the MIP DSA equations as we approach this limit. So it seems that we begin using an incorrect implementation of the Dirichlet boundary condition MIP equations as we approach the diffusion limit. Another way to look at this issue is that all of the terms in our proposed bilinear form have a diffusion coefficient (that depends on $\epsilon$) except for the Robin boundary term so this equation is not invariant to changes in the optical thickness as we might expect.
-
+\noindent where $L^2 = D/\sigma_a$. The opacities and source values were $\sigma_t = 1/\varepsilon$, $\sigma_a = \varepsilon$, $S_0 = \varepsilon$, and $D = 1/ \left(3 \sigma_t \right)$. A first-order orthogonal mesh, $3^\text{rd}$ order finite elements, $S_8$ level-symmetric angular quadrature, and convergence criteria (see Equation~\ref{eq:ConvergenceCriteria}) $\varepsilon_\text{conv} = 10^{-10}$ were used. Table~\ref{tab:1DDiffusionComparison} summarizes the $L_2$ norm of the errors between the FEM diffusion equation solution and the analytic solution.
+%
 \begin{table}[!h]
 \centering
 {\renewcommand{\arraystretch}{1.5}
@@ -57,20 +60,22 @@ $1 \times 10^{-6}$ & $6.56 \times 10^{-7}$ & $2.18 \times 10^{-7}$ & $4.08 \time
 \caption{L$_2$ norm of the errors between the diffusion equation using the given boundary condition method and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements, $C=4$, on an orthogonal mesh with 2304 zones.}
 \label{tab:1DDiffusionComparison}
 \end{table}
+%
+Method 1 (Equation~\ref{eq:Method1}), Method 2 (Equation~\ref{eq:Method2}), and the MIP DSA method solve the problem with increasing accuracy as the problem gets more optically thick (i.e. $\varepsilon \rightarrow 0$). The accuracy of Method 3 appears to be significantly less dependent on the optical thickness of the problem. However, we do observe the accuracy is slightly reduced as the problem becomes optically thick. Method 3 is the most accurate discretization in all the problems considered here.
 
-\FloatBarrier
+%In the diffusion limit, the Robin boundary condition looks increasingly like a Dirichlet boundary condition. But our implementation doesn't introduce the Dirichlet boundary terms in the MIP DSA equations as we approach this limit. So it seems that we begin using an incorrect implementation of the Dirichlet boundary condition MIP equations as we approach the diffusion limit. Another way to look at this issue is that all of the terms in our proposed bilinear form have a diffusion coefficient (that depends on $\epsilon$) except for the Robin boundary term so this equation is not invariant to changes in the optical thickness as we might expect.
 
 \begin{comment}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Effectiveness of Accelerating the Source Iteration}
 
-We use the accelerated source iteration method (Eqs. \ref{eqs:DSAAlgorithm}) to solve a 2-D uniform infinite medium problem using an old implementation of the three proposed methods (Eqs. \ref{eq:Method1}, \ref{eq:Method2}, and \ref{eq:DSARobinLHS}) and the MIP DSA method (Eq. \ref{eq:DSADirichletLHS}). This problem investigates the spectral radii of each method using $3^\text{rd}$ order finite elements and $S_8$ angular quadrature. The volumetric source is $S_0=0$ so the analytic solution is $\phi = S_0 / \sigma_a = 0$. The convergence criteria was simply
+We use the accelerated source iteration method (Eqs.~\ref{eqs:DSAAlgorithm}) to solve a 2-D uniform infinite medium problem using an old implementation of the three proposed methods (Eqs.~\ref{eq:Method1},~\ref{eq:Method2}, and~\ref{eq:DSARobinLHS}) and the MIP DSA method (Equation~\ref{eq:DSADirichletLHS}). This problem investigates the spectral radii of each method using $3^\text{rd}$ order finite elements and $S_8$ angular quadrature. The volumetric source is $S_0=0$ so the analytic solution is $\phi = S_0 / \sigma_a = 0$. The convergence criteria was simply
 \begin{flalign}
 \norm{\varphi - 0}_2 < 10^{-12}
 \end{flalign}
 
-Table \ref{tab:BCConvergenceComparisonOrthoMesh} shows the convergence properties for the DSA methods considered on a uniform orthogonal quadrilateral mesh. Tables \ref{tab:BCConvergenceComparison1OMesh} - \ref{tab:BCConvergenceComparison3OMesh} show similar results on 1$^\text{st}$-order transformed, 2$^\text{nd}$-order transformed, and 3$^\text{rd}$-order transformed meshes, respectively.
+Table~\ref{tab:BCConvergenceComparisonOrthoMesh} shows the convergence properties for the DSA methods considered on a uniform orthogonal quadrilateral mesh. Tables~\ref{tab:BCConvergenceComparison1OMesh} -~\ref{tab:BCConvergenceComparison3OMesh} show similar results on 1$^\text{st}$-order transformed, 2$^\text{nd}$-order transformed, and 3$^\text{rd}$-order transformed meshes, respectively.
 
 \begin{table}[!h]
 \footnotesize
@@ -142,7 +147,7 @@ $\varepsilon$ & $\kappa_e$ & $\kappa_\text{MFEM}$ & M. 1 & M. 2 & M. 3 & Dirichl
 
 \FloatBarrier
 
-A sensitivity study was performed on element order. Tables \ref{tab:FEOrderSensitivityOrthoMesh} - \ref{tab:FEOrderSensitivity8OMesh} summarize the results using 1$^\text{st}$-order orthogonal, 3$^\text{rd}$-order transformed, and 8$^\text{th}$-order transformed meshes, respectively.
+A sensitivity study was performed on element order. Tables~\ref{tab:FEOrderSensitivityOrthoMesh} -~\ref{tab:FEOrderSensitivity8OMesh} summarize the results using 1$^\text{st}$-order orthogonal, 3$^\text{rd}$-order transformed, and 8$^\text{th}$-order transformed meshes, respectively.
 
 \begin{table}[!h]
 \footnotesize
