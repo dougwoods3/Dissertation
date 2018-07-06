@@ -327,27 +327,27 @@ In this section, we use the method of manufactured solutions (MMS) to perform a 
 
 First, we defined a smooth manufactured solution as a function of space,
 \begin{flalign}
-\psi_\text{MMS} & = \sin \left(\frac{\pi}{2}r \right) \cos(\pi z).
+\psi_\text{MMS} & = \frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z).
 \label{eq:MMSGleicherNoAngular}
 \end{flalign}
 
 \noindent We obtain the analytical source $S_0$ that gives the exact manufactured solution by inserting Equation~\ref{eq:MMSGleicherNoAngular} into the \RZ\ transport equation:
 \begin{multline}
-\mu \frac{\partial}{\partial r} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \frac{\mu}{r} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \xi \frac{\partial}{\partial z} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] \\
-- \frac{\mu}{r} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] - \frac{\eta}{r} \frac{\partial}{\partial \omega} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \sigma_t\ \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] \\
-= \sigma_s\ \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) + \frac{1}{2 \pi} S_0,
+\mu \frac{\partial}{\partial r} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \frac{\mu}{r} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \xi \frac{\partial}{\partial z} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] \\
+- \frac{\mu}{r} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] - \frac{\eta}{r} \frac{\partial}{\partial \omega} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] + \sigma_t\ \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] \\
+= \sigma_s\ \frac{4 \pi}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) + \frac{1}{2 \pi} S_0,
 \end{multline}
 
 \noindent where
 \begin{flalign}
 \phi_\text{MMS} & = \int_{2 \pi} \psi_{MMS}\ d \Omega \\
-& = 2 \pi \sin \left(\frac{\pi}{2}r \right) \cos(\pi z).
+& = \frac{4 \pi}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z).
 \end{flalign}
 
 \noindent Given,
 \begin{flalign}
-\frac{\partial}{\partial r} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] & = \frac{\pi}{2} \cos \left(\frac{\pi}{2}r \right) \cos(\pi z), \\
-\frac{\partial}{\partial z} \left[\sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] & = - \pi \sin \left(\frac{\pi}{2}r \right) \sin(\pi z),
+\frac{\partial}{\partial r} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] & = \frac{\pi}{5} \cos \left(\frac{\pi}{2}r \right) \cos(\pi z), \\
+\frac{\partial}{\partial z} \left[\frac{2}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right] & = - \frac{2 \pi}{5} \sin \left(\frac{\pi}{2}r \right) \sin(\pi z),
 \end{flalign}
 
 \noindent and
@@ -357,17 +357,17 @@ First, we defined a smooth manufactured solution as a function of space,
 
 \noindent we obtain the analytical source for the manufactured solution
 \begin{multline}
-S_0 = 2 \pi \left[\frac{\mu \pi}{2} \cos \left(\frac{\pi}{2}r \right) \cos(\pi z) - \xi \pi \sin \left(\frac{\pi}{2}r \right) \sin(\pi z) \right. \\
-\left. + \sigma_t \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) - \sigma_s \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right].
+S_0 = 2 \pi \left[\frac{\mu \pi}{5} \cos \left(\frac{\pi}{2}r \right) \cos(\pi z) - \frac{2 \xi \pi}{5} \sin \left(\frac{\pi}{2}r \right) \sin(\pi z) \right. \\
+\left. + \frac{2}{5} \sigma_t \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) - \sigma_s \frac{4 \pi}{5} \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right].
 \end{multline}
 
-Shown in Figure~\ref{fig:RZGleicherS4O2R1noAng}, the L$^2$-error between the DFEM scalar flux and the angular integrated manufactured solution was $4.59 \times 10^{-5}$.
+We solve this with $2^\text{nd}$-order finite elements, $S_{12}$ level-symmetric angular quadrature, orthogonal quadrilateral mesh, $\sigma_t~=~1.0$, and $\sigma_s~=~0.3$. Shown in Figure~\ref{fig:RZGleicherNoAngp2S12g0r3}, the L$^2$-error between the DFEM scalar flux and the angular integrated manufactured solution was $8.06 \times 10^{-8}$.
 %
-\begin{figure}[!htb]
+\begin{figure}[htb]
 \centering
-\includegraphics[scale=0.3]{../../Research/graphics/RZGleicherS4O2R1noAng}
-\caption{MMS solution for Equation~\ref{eq:MMSGleicherNoAngular}.}
-\label{fig:RZGleicherS4O2R1noAng}
+\includegraphics[scale=0.3,trim={50pt 50pt 50pt 50pt},clip]{../../Research/graphics/RZGleicherNoAngp2S12g0r3}
+\caption{MMS solution for Equation~\ref{eq:MMSGleicherNoAngular} for $p=2$ and $S_{12}$ level-symmetric angular quadrature.}
+\label{fig:RZGleicherNoAngp2S12g0r3}
 \end{figure}
 
 Next, we added an angular dependence to the manufactured solution,
@@ -413,16 +413,54 @@ S_0 = 2 \pi \left[\frac{\mu \pi}{2} (1-\mu^2)(1-\xi^2) \cos \left(\frac{\pi}{2}r
 \left. + \sigma_t (1-\mu^2)(1-\xi^2) \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) - \frac{4 \pi}{5} \sigma_s \sin \left(\frac{\pi}{2}r \right) \cos(\pi z) \right].
 \end{multline}
 
-\noindent We solve this with $2^\text{nd}$-order FEM, orthogonal quadrilateral mesh, $\sigma_t~=~1.0$, $\sigma_s~=~0.3$, $S_0~=~0.7$, $S_4$ level-symmetric angular quadrature. The solution is shown in Figure~\ref{fig:RZGleicherS4O2R1} and the L$^2$-error between the DFEM scalar flux and the angular integrated manufactured solution was $0.132$.
+\noindent We solve this with $2^\text{nd}$-order FEM, orthogonal quadrilateral mesh, $\sigma_t~=~1.0$, $\sigma_s~=~0.3$, and $S_0~=~0.7$. The solution using $S_{12}$ level-symmetric angular quadrature is shown in Figure~\ref{fig:RZGleicherp2S12g0r3}.
 %
 \begin{figure}[!htb]
 \centering
-\includegraphics[scale=0.3]{../../Research/graphics/RZGleicherS4O2R1}
-\caption{MMS solution for Equation~\ref{eq:MMSGleicherwAngular}.}
-\label{fig:RZGleicherS4O2R1}
+\includegraphics[scale=0.3,trim={50pt 70pt 50pt 90pt},clip]{../../Research/graphics/RZGleicherp2S12g0r3}
+\caption{MMS solution for Equation~\ref{eq:MMSGleicherwAngular} using $p=2$ and $S_{12}$ level-symmetric angular quadrature.}
+\label{fig:RZGleicherp2S12g0r3}
 \end{figure}
 %
-Since there was an increase in the error, it is clear that there is a dependence of the spatial error upon the angular discretization.
+The L$^2$-error between the DFEM scalar flux and the angular integrated manufactured solution for various $S_N$ orders is shown in Figure~\ref{fig:RZGleicherp2g0r1}.
+%
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    %width=0.9\textwidth,
+    %height=0.9\textwidth,
+    grid=major,
+    xlabel={$N(N+1)$},
+    ylabel={L$^2$ error},
+  	xmode=log,
+  	ymode=log,
+  	xmin=20,xmax=200,
+  	ymin=.02,ymax=0.3,
+  	]
+\addplot[dashed, black] table[row sep=crcr] {
+24 0.139 \\
+48 0.0792 \\
+80 0.0523 \\
+120 0.0376 \\
+168 0.0286 \\};
+\addlegendentry{$O \left(\text{N}^{-0.8} \right)$}
+
+\addplot[mark=*, mark size=2, draw=black, mark options={solid, fill=black}, only marks] table[row sep=crcr] {
+24 0.13912354 \\
+48 0.074601074 \\
+80 0.049671141 \\
+120 0.03661699 \\
+168 0.028534338 \\};
+
+
+  \end{axis}
+\end{tikzpicture}
+\caption{Accuracy of solutions for the number of directions in a $S_N$ angular quadrature order using $p=2$, on an orthogonal mesh.}
+\label{fig:RZGleicherp2g0r1}
+\end{figure}
+%
+It is clear that there is a dependence of the spatial error upon the angular discretization order.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1979,8 +2017,67 @@ In this section, we perform studies of the methodology presented above. This sec
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{MIP DSA with Homogeneous Dirichlet Boundary Conditions}
 \label{sec:MIPDSADirichlet}
-This section shows the results from the MIP DSA method with homogeneous Dirichlet boundary conditions implementation from Section~\ref{sec:MIPDSA}. We study the sensitivity of the spectral radius to the constant $C$ in Section~\ref{sec:RhoSensToConstantC} and to the scattering ratio $c$ in Section~\ref{sec:RhoSensToScatRatio}.
+This section shows the results from the MIP DSA method with homogeneous Dirichlet boundary conditions implementation from Section~\ref{sec:MIPDSA}. First, we examine the accuracy of the diffusion equation in Section~\ref{sec:AccuracyDirichlet}. Then, we study the sensitivity of the spectral radius to the constant $C$ in Section~\ref{sec:RhoSensToConstantC}. Finally, we investigate the sensitivity of the spectral radius to the scattering ratio $c$ in Section~\ref{sec:RhoSensToScatRatio}.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Accuracy}
+\label{sec:AccuracyDirichlet}
+An analytic one-dimensional diffusion equation solution with homogeneous Dirichlet boundary conditions was used to benchmark the solution to the diffusion equation using the boundary conditions from the original MIP DSA method. We examine the accuracy of the one-dimensional diffusion equation with respect to the choice of the constant $C$. The analytic solution to the 1-D diffusion equation with homogeneous Dirichlet boundary conditions is
+\begin{subequations}
+\begin{flalign}
+\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{Q}{\sigma_a}, \\
+c_1 & = \left(1-e^{-2/L} \right)^{-1} \frac{Q}{\sigma_a} \left(e^{-2/L}-e^{-1/L} \right), \\
+c_2 & = -c_1 - \frac{Q}{\sigma_a},
+\end{flalign}
+\end{subequations}
+%
+\noindent where $L^2 = D/\sigma_a$. The problem is homogeneous with $\sigma_t~=~1/\varepsilon$, $\sigma_a~=~\varepsilon$, $Q=\varepsilon$, and $D=1/(3 \sigma_t)$. We perform the calculations on an orthogonal quadrilateral mesh with periodic boundary conditions on top and bottom. Table~\ref{tab:1DDiffusionDirichletp1} demonstrates that for $p=1$, each choice of $C$ results in nearly identical solutions.
+%
+\begin{table}[!h]
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$\varepsilon$ & $C=2$ & $C=4$ & $C=6$ \\\hline
+10 & $2.56 \times 10^{-6}$ & $2.56 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+1 & $2.56 \times 10^{-6}$ & $2.56 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+0.1 & $2.56 \times 10^{-6}$ & $2.56 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+0.01 & $2.56 \times 10^{-6}$ & $2.56 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+$1 \times 10^{-3}$ & $2.56 \times 10^{-6}$ & $2.56 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+$1 \times 10^{-4}$ & $2.57 \times 10^{-6}$ & $2.57 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+$1 \times 10^{-5}$ & $2.58 \times 10^{-6}$ & $2.58 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+$1 \times 10^{-6}$ & $2.58 \times 10^{-6}$ & $2.58 \times 10^{-6}$ & $2.57 \times 10^{-6}$ \\\hline
+\end{tabular}}
+\caption{L$_2$ norm of the errors between the diffusion equation using homogeneous Dirichlet boundary conditions for the given choice of $C$ and the reference solution (1-D analytic solution) using $1^\text{st}$-order elements on an orthogonal mesh with 12,288 zones.}
+\label{tab:1DDiffusionDirichletp1}
+\end{table}
+%
+Table~\ref{tab:1DDiffusionDirichletp3} demonstrates that, for $p=3$, there is minimal dependence on the choice for $C$.
+%
+\begin{table}[!h]
+\centering
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$\varepsilon$ & $C=2$ & $C=4$ & $C=6$ \\\hline
+10 & $3.70 \times 10^{-12}$ & $1.10 \times 10^{-11}$ & $9.64 \times 10^{-12}$ \\\hline
+1 & $3.29 \times 10^{-12}$ & $2.59 \times 10^{-12}$ & $3.53 \times 10^{-12}$ \\\hline
+0.1 & $1.77 \times 10^{-12}$ & $4.58 \times 10^{-12}$ & $3.74 \times 10^{-12}$ \\\hline
+0.01 & $2.61 \times 10^{-12}$ & $3.42 \times 10^{-12}$ & $7.63 \times 10^{-12}$ \\\hline
+$1 \times 10^{-3}$ & $2.45 \times 10^{-12}$ & $2.05 \times 10^{-12}$ & $4.64 \times 10^{-12}$ \\\hline
+$1 \times 10^{-4}$ & $4.71 \times 10^{-12}$ & $3.49 \times 10^{-12}$& $1.69 \times 10^{-12}$ \\\hline
+$1 \times 10^{-5}$ & $3.75 \times 10^{-11}$ & $3.75 \times 10^{-11}$ & $3.75 \times 10^{-11}$ \\\hline
+$1 \times 10^{-6}$ & $2.02 \times 10^{-10}$ & $2.02 \times 10^{-10}$ & $2.02 \times 10^{-10}$ \\\hline
+\end{tabular}}
+\caption{L$_2$ norm of the errors between the diffusion equation using homogeneous Dirichlet boundary conditions for the given choice of $C$ and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements on an orthogonal mesh with 12,288 zones.}
+\label{tab:1DDiffusionDirichletp3}
+\end{table}
+%
+For each $\varepsilon$, the errors between each $C$ are on the same order of magnitude except for the $\varepsilon=10$ case. In the next section, we show that this loss of accuracy does not affect the spectral radius in the optically thin regime. Both Tables~\ref{tab:1DDiffusionDirichletp1} and~\ref{tab:1DDiffusionDirichletp3} indicate that the accuracy of the diffusion equation does not substantially depend on $C$.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsubsection{Spectral Radius Sensitivity to Constant $C$}
 \label{sec:RhoSensToConstantC}
 Previous researchers used values for $C$ arbitrarily. Wang and Ragusa~\cite{WangRagusaDSA} used $C = 2$ and Turcksin and Ragusa~\cite{TurcksinDiscontinuousDSA} used $C = 4$. Here, we perform a study to assess the sensitivity of the spectral radius to changes in the constant $C$ (see Equation~\ref{eq:cp}) for various cell thicknesses and finite element orders. 
@@ -2099,7 +2196,7 @@ We observe that the peaks from Figure~\ref{fig:MIPHOC2Ortho} remain significantl
 
 These results are very similar to those reported by Wang and Ragusa~\cite{WangRagusaDSA}. This work uses a quadrilateral mesh rather than a triangular mesh, as Wang and Ragusa~\cite{WangRagusaDSA} used. The effect of using a triangular mesh is that $h_\perp^\pm$ is smaller, increasing $\kappa_e^{IP}$ in Equation~\ref{eq:kappaIP}. This impact is similar to increasing the value of the constant $C$. Higher-order finite elements for larger choices of $C$ do behave like the higher-order results of Wang and Ragusa~\cite{WangRagusaDSA}.
 
-In all cases $C=\{2,4,6\}$, the spectral radius was less than one, indicating these methods are unconditionally converging. We observed that larger values of $C$ reduce the spectral radius in the intermediate range by mitigating the observable peaks. However, the larger $C$ values increased the spectral radius toward the optically thin region by introducing a ``hump''. Assuming that the optical thickness, diffusion coefficient $D^\pm$, the mesh size $h^\pm$, and finite element order $p^\pm$ are all problem dependent, only the value of $C$ remains user defined. Knowing the problem specifications {\em a priori} may inform a particular choice of $C$.
+In all cases $C=\{2,4,6\}$, the spectral radius was less than one, indicating these methods are unconditionally converging. We observed that larger values of $C$ reduce the spectral radius in the intermediate range by mitigating the observable peaks. However, the larger $C$ values increased the spectral radius toward the optically thin region by introducing a ``hump''. Assuming that the optical thickness, diffusion coefficient $D^\pm$, the mesh size $h^\pm$, and finite element order $p^\pm$ are all problem dependent, only the value of $C$ remains user-defined. Knowing the problem specifications {\em a priori} may inform a particular choice of $C$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsubsection{Sensitivity of the Spectral Radius to the Scattering Ratio $c$}
@@ -2132,7 +2229,7 @@ The problems here have the same cross sections and source as Section~\ref{sec:Rh
 \label{fig:cP4C4OrthoUnit}
 \end{figure}
 %
-Figure~\ref{fig:cP4C43MeshUnit} shows the same results on a $3^\text{rd}$-order mesh.
+Figure~\ref{fig:cP4C43MeshUnit} shows the same results on a $3^\text{rd}$-order mesh shown in Figure~\ref{fig:WRg3}.
 %
 \begin{figure}[!htb]
 \centering
@@ -2158,6 +2255,13 @@ Figure~\ref{fig:cP4C43MeshUnit} shows the same results on a $3^\text{rd}$-order 
 \end{tikzpicture}
 \caption{Spectral radius data for various scattering ratios $c$ using $4^\text{th}$-order finite elements, constant $C=4$, and $3^\text{rd}$-order mesh.}
 \label{fig:cP4C43MeshUnit}
+\end{figure}
+%
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=0.3,trim={180pt 70pt 50pt 110pt},clip]{../../Research/graphics/mesh/WRg3}
+\caption{$3^\text{rd}$-order periodic mesh.}
+\label{fig:WRg3}
 \end{figure}
 %
 Increasing the scattering ratio increased the spectral radius, approaching an apparent limit. Adding curvature to the mesh surfaces also increased the spectral radius. Although the spectral radius is higher, the jump when the ``switch'' occurs is not as significant on the $3^\text{rd}$-order mesh as it is with the orthogonal grid.
@@ -2272,7 +2376,7 @@ This section shows the results from the MIP DSA method with homogeneous Robin bo
 An analytic one-dimensional diffusion equation solution with zero incident current boundary conditions was used to benchmark the solution to the diffusion equation using the proposed Robin boundary condition methods. The original MIP DSA method (Equation~\ref{eq:DSADirichletLHS}) was also solved for comparison. The analytic solution to the 1-D diffusion equation with homogeneous Robin boundary conditions is
 \begin{subequations}
 \begin{flalign}
-\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{S_0}{\sigma_a},
+\phi \left(x \right) & = c_1 e^{x/L} + c_2 e^{-x/L} + \frac{Q}{\sigma_a},
 \end{flalign}
 \begin{multline}
 c_1 = \frac{1}{4} \frac{S_0}{\sigma_a} \left[ \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} - \left(\frac{1}{4} - \frac{1}{2} \frac{D}{L} \right) \right] \\
@@ -2283,30 +2387,28 @@ c_2 & = \left[-c_1 \left(\frac{1}{4} + \frac{1}{2} \frac{D}{L} \right) e^{1/L} -
 \end{flalign}
 \end{subequations}
 %
-\noindent where $L^2 = D/\sigma_a$.
-
-Table~\ref{tab:1DDiffusionComparison} shows the errors between the DGFEM solution and the analytic diffusion equation for various cell sizes.
+\noindent where $L^2 = D/\sigma_a$. The problem is homogeneous with $\sigma_t~=~1/\varepsilon$, $\sigma_a~=~\varepsilon$, $Q~=~\varepsilon$, and $D=1/(3 \sigma_t)$. We perform the calculations on an orthogonal quadrilateral mesh with periodic boundary conditions on top and bottom. Table~\ref{tab:1DDiffusionComparison} shows the errors between the DGFEM solution and the analytic diffusion equation for various cell sizes.
 %
 \begin{table}[!h]
 \centering
 {\renewcommand{\arraystretch}{1.5}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|}
 \hline
-$\varepsilon$ & Robin BC & Dirichlet BC \\\hline
-10 & $4.05 \times 10^{-11}$ & 0.722 \\\hline
-1 & $2.03 \times 10^{-10}$ & 0.363 \\\hline
-0.1 & $3.39 \times 10^{-10}$ & 0.0607 \\\hline
-0.01 & $3.63 \times 10^{-10}$ & 0.00650 \\\hline
-$1 \times 10^{-3}$ & $3.66 \times 10^{-10}$ & $6.55 \times 10^{-4}$ \\\hline
-$1 \times 10^{-4}$ & $3.66 \times 10^{-10}$ & $6.56 \times 10^{-5}$ \\\hline
-$1 \times 10^{-5}$ & $3.67 \times 10^{-10}$ & $6.54 \times 10^{-6}$ \\\hline
-$1 \times 10^{-6}$ & $4.08 \times 10^{-10}$ & $3.91 \times 10^{-7}$ \\\hline
+$\varepsilon$ & $C=2$ & $C=4$ & $C=6$ & {\renewcommand{\arraystretch}{1}\begin{tabular}{c}Dirichlet\\$C=4$ \end{tabular}} \\\hline
+%10 & $4.38 \times 10^{-11}$ & $2.13 \times 10^{-10}$ & $1.05 \times 10^{-10}$ & 0.722 \\\hline
+1 & $2.04 \times 10^{-11}$ & $1.77 \times 10^{-11}$ & $1.41 \times 10^{-11}$ & 0.363 \\\hline
+0.1 & $1.42 \times 10^{-12}$ & $1.08 \times 10^{-11}$ & $3.45 \times 10^{-12}$ & $6.07 \times 10^{-2}$ \\\hline
+0.01 & $2.52 \times 10^{-12}$ & $2.97 \times 10^{-12}$ & $7.67 \times 10^{-12}$ & $6.50 \times 10^{-3}$ \\\hline
+$1 \times 10^{-3}$ & $2.38 \times 10^{-12}$ & $2.05 \times 10^{-12}$ & $5.13 \times 10^{-12}$ & $6.55 \times 10^{-4}$ \\\hline
+$1 \times 10^{-4}$ & $4.83 \times 10^{-12}$ & $3.52 \times 10^{-12}$ & $1.68 \times 10^{-12}$ & $6.56 \times 10^{-5}$ \\\hline
+$1 \times 10^{-5}$ & $3.72 \times 10^{-11}$ & $3.72 \times 10^{-11}$ & $3.72 \times 10^{-11}$ & $6.56 \times 10^{-6}$ \\\hline
+$1 \times 10^{-6}$ & $2.06 \times 10^{-10}$ & $2.06 \times 10^{-10}$ & $2.06 \times 10^{-10}$ & $6.55 \times 10^{-7}$ \\\hline
 \end{tabular}}
-\caption{L$_2$ norm of the errors between the diffusion equation using the given boundary condition method and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements, $C=4$, on an orthogonal mesh with 2304 zones.}
+\caption{L$_2$ norm of the errors between the diffusion equation using the Robin boundary condition method and the reference solution (1-D analytic solution) using $3^\text{rd}$-order elements, on an orthogonal mesh with 12,288 zones; Dirichlet boundary condition method solved for comparison.}
 \label{tab:1DDiffusionComparison}
 \end{table}
 %
-For all cell sizes, the Robin boundary condition method achieves errors on the order of $10^{-10}$ or better. This helps confirm the correct implementation of the vacuum boundary conditions on the DSA equation. We also notice that as $\varepsilon \rightarrow 0$, we have $D=\varepsilon/(3 \sigma_t) \rightarrow 0$, and
+For all cell sizes, the Robin boundary condition method achieves errors on the order of $10^{-10}$ or better regardless of $C$. This helps confirm the correct implementation of the vacuum boundary conditions on the DSA equation. The errors are also very similar between each value of $C$ for any given $\varepsilon$. This suggests that $C$ does not impact the accuracy of the diffusion equation. We also notice that as $\varepsilon \rightarrow 0$, we have $D=\varepsilon/(3 \sigma_t) \rightarrow 0$, and
 \begin{flalign}
 \left[\left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^b} - \frac{1}{2} \left( \varphi, D \partial_n v \right)_{\partial \mathcal{D}^b} - \frac{1}{2} \left( D \partial_n \varphi, v \right)_{\partial \mathcal{D}^b} \right] \rightarrow \left( \kappa_e \varphi, v \right)_{\partial \mathcal{D}^b}.
 \end{flalign}

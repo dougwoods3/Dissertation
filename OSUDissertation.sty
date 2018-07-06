@@ -9,7 +9,7 @@
 \usepackage{setspace}
 \usepackage{caption}
 \usepackage{standalone}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{hyperref}
 \usepackage[section]{placeins}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
@@ -61,7 +61,7 @@
 \usepackage{tocloft}
 \renewcommand\cftsecfont{\normalfont}
 \renewcommand\cftsecpagefont{\normalfont}
-\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS {\color{red}use ``\textbackslash contheading'' in .toc}}}}
+\addto\captionsenglish{\renewcommand\contentsname{\normalfont{TABLE OF CONTENTS}}}
 \renewcommand\cfttoctitlefont{\Large\hfill}
 \renewcommand\cftaftertoctitle{\hfill\mbox{}}
 
@@ -72,7 +72,7 @@
 \addtocontents{toc}{\contheading}
 \addtocontents{toc}{~\hfill \underline{\text{Page}} \par}
 
-\addto\captionsenglish{\renewcommand*\listfigurename{\normalfont{LIST OF FIGURES {\color{red}use ``\textbackslash contlofheading'' in .lof}}}}
+\addto\captionsenglish{\renewcommand*\listfigurename{\normalfont{LIST OF FIGURES}}}
 \renewcommand\cftloftitlefont{\Large\hfill}
 \renewcommand\cftafterloftitle{\hfill\mbox{}}
 \DeclareRobustCommand*{\contlofheading}{%
@@ -84,6 +84,10 @@
 \addto\captionsenglish{\renewcommand*\listtablename{\normalfont{LIST OF TABLES}}}
 \renewcommand\cftlottitlefont{\Large\hfill}
 \renewcommand\cftafterlottitle{\hfill\mbox{}}
+\DeclareRobustCommand*{\contlotheading}{%
+  \afterpage{{\normalfont\Large\centering
+  LIST OF TABLES (Continued)\par \underline{\normalsize\text{Table}} \hfill \underline{\normalsize\text{Page}} \par \bigskip}}}
+\addtocontents{lot}{\contlotheading}
 \addtocontents{lot}{\underline{\normalsize\text{Table}} \hfill \underline{\normalsize\text{Page}} \par \bigskip}
 
 \newcommand{\SN}{$S_N$}
